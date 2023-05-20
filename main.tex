@@ -46,7 +46,9 @@
 %%
 %%
 \documentclass[sigconf,review]{acmart}
-
+\usepackage{listings}
+\usepackage{js}
+\lstset{language=Java,basicstyle=\ttfamily\footnotesize,commentstyle=\itshape,morekeywords={assert},keywordstyle=\ttfamily\bfseries}
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
@@ -116,7 +118,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Runtime verification of use of hash code of mutable objects}
+\title{Runtime verification of hashCode in mutable classes}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -228,11 +230,12 @@
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
-\keywords{Java, hash code, mutable objects, runtime verification}
+\keywords{Java, hashCode, mutable classes, runtime verification}
 
 \maketitle
 
 \input{intro}
+\input{example}
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{biblio}
