@@ -48,6 +48,11 @@
 \documentclass[sigconf,review]{acmart}
 \usepackage{listings}
 \usepackage{js}
+\usepackage{js}
+\usepackage{xspace}
+
+\newcommand{\rml}{RML\xspace}
+
 \lstset{language=Java,basicstyle=\ttfamily\footnotesize,commentstyle=\itshape,morekeywords={assert},keywordstyle=\ttfamily\bfseries}
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -236,6 +241,7 @@
 
 \input{intro}
 \input{example}
+\input{rml}
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{biblio}
