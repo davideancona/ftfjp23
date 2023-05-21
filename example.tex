@@ -1,16 +1,16 @@
-\section{Problems with hashCode and mutable classes}
+\section{Objects hash code and mutable classes}
 
-While correctness issues concerned with the relationship between methods \lstinline{equals} and \lstinline{hashCode} are well-known
-in Java and C\# \cite{Bloch18,OkanoHSON19}, less attention is devoted to the potentially dangerous effects of the redefinition of 
+Correctness issues concerned with the relationship between methods \lstinline{equals} and \lstinline{hashCode} are well-known
+in Java \cite{Bloch18,OkanoHSON19} and other object-oriented languages as C\#, Kotlin, Scala, and Python supporting redefinition
+of object equality and hash code; however, less attention has been devoted to the potentially dangerous effects of the redefinition of 
 \lstinline{hashCode} in mutable classes when their instances are used in container objects implemented with hash tables.
 
-In Java such a problem is more serious because all mutable classes implementing interface \lstinline{java.util.Collection} redefine
-method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
+In Java (and Kotlin and Scala as well)  such a problem is more serious because the API mutable classes implementing interface \lstinline{java.util.Collection} redefine method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
 
 Let us consider this simple example:
 \begin{lstlisting}[numbers=left]
 var sset = new HashSet<Set<Integer>>();
-var s = new HashSet<>(asList(1,2,3));
+var s = new HashSet<>(asList(1,2,3))
 sset.add(s); // sset is {{1,2,3}}
 assert sset.contains(s); // success
 s.remove(1);
@@ -25,16 +25,21 @@ contains the three elements of type \lstinline{Integer} corresponding to 1, 2 an
 
 At line 5 element 1 is removed from \lstinline{set} and at the next line the same assertion is checked again; this time the assertion fails, although no method has been invoked on \lstinline{sset} and, hence, its state should be the same as in the previous assertion.
 
+This does not come to surprise once one looks at the documentation and discovers that methods \lstinline{equals} and \lstinline{hashCode} are overridden in \lstinline{HashSet}\footnote{Actually, in its direct abstract superclass \lstinline{AbstractSet}.} to depend on all the elements contained in the set. As a consequence, the integer returned by  \lstinline{s.hashCode()} changes after removing element 1 from \lstinline{s} and, hence, the assertion at line 6 fails because \lstinline{s} is searched in the wrong bucket\footnote{It is still possible that the searched bucket is the right one after removing the element from \lstinline{s}, but it is quite unlikely; indeed, this is not the case for the specific example.} of the hash table of \lstinline{sset}.
+
+Once element 1 is inserted back in \lstinline{s}, the computed hash code of the object is again that at line 4, hence assertion at line 8 succeeds. 
+
+As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{java.util.Collection}
 
 \begin{lstlisting}
-var sset=new HashSet<ISet<int>>();
-var set=new HashSet<int>(new int[]{1,2,3});
-sset.Add(set);
-Debug.Assert(sset.Contains(set));
-set.Remove(1);
-Debug.Assert(sset.Contains(set));
-set.Add(1);
-Debug.Assert(sset.Contains(set));
+var sset = new HashSet<ISet<int>>();
+var s = new HashSet<int>(new int[] { 1, 2, 3 });
+sset.Add(s);
+Debug.Assert(sset.Contains(s)); // success
+s.Remove(1);
+Debug.Assert(sset.Contains(s)); // success 
+s.Add(1);
+Debug.Assert(sset.Contains(s)); // success
 \end{lstlisting}
 
 
