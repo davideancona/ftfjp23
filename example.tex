@@ -20,7 +20,7 @@ assert sset.contains(s); // success
 \end{lstlisting}
 Two sets are created with class \lstinline{java.util.HashSet}; in such a class method \lstinline{hashCode} of the elements is used to identify the
 bucket where they are stored in the hash table, and method \lstinline{equals} to search them in the bucket.
-After execution of the first three lines \lstinline{sset} contains \lstinline{set} as stated by the succesfull assertion at line 4; in turn, \lstinline{set}
+After execution of the first three lines \lstinline{sset} contains \lstinline{set} as stated by the successful assertion at line 4; in turn, \lstinline{set}
 contains the three elements of type \lstinline{Integer} corresponding to 1, 2 and 3.
 
 At line 5 element 1 is removed from \lstinline{set} and at the next line the same assertion is checked again; this time the assertion fails, although no method has been invoked on \lstinline{sset} and, hence, its state should be the same as in the previous assertion.
@@ -29,8 +29,10 @@ This does not come to surprise once one looks at the documentation and discovers
 
 Once element 1 is inserted back in \lstinline{s}, the computed hash code of the object is again that at line 4, hence assertion at line 8 succeeds. 
 
-As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{java.util.Collection}
+As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{java.util.Collection} the receiver in the redefined methods \lstinline{equals} and \lstinline{hashCode} is considered as an immutable object. This should be avoided for all mutable classes whose objects may be used as keys in hash tables, because the consequence is that the object should be ``frozen'' until is no longer in the table to avoid misbehavior as described above.
 
+While in C\# and Python it is still possible for the programmers to define mutable classes where the corresponding methods for
+equality and hash code are not well-behaved w.r.t. hash tables, predefined mutable collections do not exhibit the problems of Java, Kotlin and Scala.
 \begin{lstlisting}
 var sset = new HashSet<ISet<int>>();
 var s = new HashSet<int>(new int[] { 1, 2, 3 });
@@ -41,14 +43,21 @@ Debug.Assert(sset.Contains(s)); // success
 s.Add(1);
 Debug.Assert(sset.Contains(s)); // success
 \end{lstlisting}
+In the C\# code snippet above all assertions succeed simply because methods \lstinline{Equals} and \lstinline{GetHashCode} are not redefined
+in mutable classes implementing collections, but inherited from \lstinline{Object}.
 
-
+Interestingly, in Python for the predefined types \lstinline{set}, \lstinline{list} and \lstinline{dict} another strategy has been adopted: the objects are compared\footnote{In Python object equality can be redefined through method \lstinline{__eq__} to change the behavior of the \lstinline{==} operator.} as
+immutable objects, but computing their hash code throws an exception:
 \begin{lstlisting}[language=Python]
 sset=set()                                                           
-s=set([1,2,3])                                                         
+s1=set([1,2,3])
+s2=set([1,2,3])
+assert s1==s2 // success
 sset.add(s) # TypeError: unhashable type: 'set'       
 \end{lstlisting}
+In this way it is not possible to use sets, lists and dictionaries as hash table keys; this a drastic solution which prevents, for instance, to easily manage with sets of sets or lists. 
 
+Finally, JavaScript does not support redefinition of object equality and hash code, hence does not exhibit the issue shown above. 
 \begin{lstlisting}[language=Javascript]
 let sset=new Set();                                                           
 let s=new Set([1,2,3]); // sset is {{1,2,3}}                                                         
@@ -59,7 +68,3 @@ console.assert( sset.has(s)); // success
 s.add(1);
 console.assert( sset.has(s)); // success
 \end{lstlisting}
-
-
-
-
