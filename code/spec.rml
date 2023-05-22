@@ -1,12 +1,13 @@
-new(hashId) matches {event:'init_post', class:'HashSet', res:hashId};
-not_new_hash not matches new(_);
-modify(targId) matches {event:'meth_post', targetId:targId, name:'add' | 'remove', res:true};
+new_hash(hashId) matches {event:'func_post', name:'HashSet', resultId:hashId};
+not_new_hash not matches new_hash(_);
+modify_pre(targId) matches {event:'meth_pre', targetId:targId, name:'add' | 'remove'};
+modify_post matches {event:'meth_post', name:'add' | 'remove', res:true};
 not_modify(targId) not matches modify(targId);
 add(hashId,elemId) matches {event:'meth_post', targetId:hashId, name:'add', argIds:[elemId], res:true};
 not_add(hashId) not matches add(hashId,_);
 remove(hashId,elemId) matches {event:'meth_post', targetId:hashId, name:'add', argIds:[elemId], res:true};
 modify(hashId,elemId) matches modify(hashId) | modify(elemId);
 
-Main = not_new* {let hashId;new(hashId) (VerifyHash<hashId> /\ Main)}?;
+Main = not_new_hash* {let hashId;new_hash(hashId) (VerifyHash<hashId> /\ Main)}?;
 VerifyHash<hashId> = not_add(hash_id)* {let elemId;add(hashId,elemId) modify(hashId,elemId) >> VerifyHashElem<hashId,elemId>};
 VerifyHashElem<hashId,elemId> = not_modify(elemId)*remove(hashId,elemId) | VerifyHash<hashId>;
