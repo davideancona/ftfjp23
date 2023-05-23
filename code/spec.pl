@@ -18,5 +18,5 @@ match(_event, any_et) :- deep_subdict(_event, _{}).
 match(_event, none_et) :- not(match(_event, any_et)).
 trace_expression('Main', Main) :- (Main=((relevant_et>>SafeHash);1)),
 	(SafeHash=(star(not_new_hash_et)*optional(var(hash_id, (new_hash_et(var(hash_id))*(app(SafeHashTable, [var(hash_id)])/\SafeHash)))))),
-	(SafeHashTable=gen([hash_id], (star(not_add_et(var(hash_id)))*var(elem_id, (add_et(var(hash_id), var(elem_id))*(app(SafeHashElem, [var(hash_id), var(elem_id)])/\app(SafeHashTable, [var(hash_id)]))))))),
+	(SafeHashTable=gen([hash_id], (star(not_add_et(var(hash_id)))*optional(var(elem_id, (add_et(var(hash_id), var(elem_id))*(app(SafeHashElem, [var(hash_id), var(elem_id)])/\app(SafeHashTable, [var(hash_id)])))))))),
 	(SafeHashElem=gen([hash_id, elem_id], ((op_et(var(hash_id), var(elem_id))>>(star(not_modify_remove_et(var(hash_id), var(elem_id)))*(remove_et(var(hash_id), var(elem_id))*1)));1))).

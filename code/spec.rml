@@ -10,5 +10,5 @@ relevant matches new_hash(_) | modify(_);
 
 Main = relevant >> SafeHash;
 SafeHash = not_new_hash* {let hash_id;new_hash(hash_id) (SafeHashTable<hash_id> /\ SafeHash)}?;
-SafeHashTable<hash_id> = not_add(hash_id)* {let elem_id;add(hash_id,elem_id) (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)};
+SafeHashTable<hash_id> = not_add(hash_id)* {let elem_id;add(hash_id,elem_id) (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)}?;
 SafeHashElem<hash_id,elem_id> = op(hash_id,elem_id) >> not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all;
