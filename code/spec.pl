@@ -1,20 +1,23 @@
 :- module(spec, [(trace_expression/2), (match/2)]).
 :- use_module(monitor(deep_subdict)).
 :- use_module(library(clpr)).
-match(_event, new_hash_et(HashId)) :- deep_subdict(_event, _{event:"func_post", name:"HashSet", resultId:HashId}).
+match(_event, new_hash_et(Hash_id)) :- deep_subdict(_event, _{event:"func_post", name:"HashSet", resultId:Hash_id}).
 match(_event, not_new_hash_et) :- not(match(_event, new_hash_et(_))).
-match(_event, modify_pre_et(TargId)) :- deep_subdict(_event, _{event:"meth_pre", targetId:TargId, name:"add"}).
-match(_event, modify_pre_et(TargId)) :- deep_subdict(_event, _{event:"meth_pre", targetId:TargId, name:"remove"}).
-match(_event, modify_post_et) :- deep_subdict(_event, _{event:"meth_post", name:"add", res:true}).
-match(_event, modify_post_et) :- deep_subdict(_event, _{event:"meth_post", name:"remove", res:true}).
-match(_event, not_modify_et(TargId)) :- not(match(_event, modify_et(TargId))).
-match(_event, add_et(HashId, ElemId)) :- deep_subdict(_event, _{event:"meth_post", targetId:HashId, name:"add", argIds:[ElemId], res:true}).
-match(_event, not_add_et(HashId)) :- not(match(_event, add_et(HashId, _))).
-match(_event, remove_et(HashId, ElemId)) :- deep_subdict(_event, _{event:"meth_post", targetId:HashId, name:"add", argIds:[ElemId], res:true}).
-match(_event, modify_et(HashId, ElemId)) :- match(_event, modify_et(HashId)).
-match(_event, modify_et(HashId, ElemId)) :- match(_event, modify_et(ElemId)).
+match(_event, modify_et(Targ_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Targ_id, name:"add", res:true}).
+match(_event, modify_et(Targ_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Targ_id, name:"remove", res:true}).
+match(_event, not_modify_et(Targ_id)) :- not(match(_event, modify_et(Targ_id))).
+match(_event, modify_et(Hash_id, Elem_id)) :- match(_event, modify_et(Hash_id)).
+match(_event, modify_et(Hash_id, Elem_id)) :- match(_event, modify_et(Elem_id)).
+match(_event, add_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Hash_id, name:"add", argIds:[Elem_id], res:true}).
+match(_event, not_add_et(Hash_id)) :- not(match(_event, add_et(Hash_id, _))).
+match(_event, remove_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Hash_id, name:"remove", argIds:[Elem_id], res:true}).
+match(_event, op_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{targetId:Hash_id}).
+match(_event, op_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{elem_id:Hash_id}).
+match(_event, relevant_et) :- match(_event, new_hash_et(_)).
+match(_event, relevant_et) :- match(_event, modify_et(_)).
 match(_event, any_et) :- deep_subdict(_event, _{}).
 match(_event, none_et) :- not(match(_event, any_et)).
-trace_expression('Main', Main) :- (Main=(star(not_new_hash_et)*optional(var(hashId, (new_hash_et(var(hashId))*(app(VerifyHash, [var(hashId)])/\Main)))))),
-	(VerifyHash=gen([hashId], (star(not_add_et(var(hash_id)))*var(elemId, (add_et(var(hashId), var(elemId))*((modify_et(var(hashId), var(elemId))>>app(VerifyHashElem, [var(hashId), var(elemId)]));1)))))),
-	(VerifyHashElem=gen([hashId, elemId], ((star(not_modify_et(var(elemId)))*remove_et(var(hashId), var(elemId)))|app(VerifyHash, [var(hashId)])))).
+trace_expression('Main', Main) :- (Main=((relevant_et>>SafeHash);1)),
+	(SafeHash=(star(not_new_hash_et)*optional(var(hash_id, (new_hash_et(var(hash_id))*(app(SafeHashTable, [var(hash_id)])/\SafeHash)))))),
+	(SafeHashTable=gen([hash_id], (star(not_add_et(var(hash_id)))*var(elem_id, (add_et(var(hash_id), var(elem_id))*(app(SafeHashElem, [var(hash_id), var(elem_id)])/\app(SafeHashTable, [var(hash_id)]))))))),
+	(SafeHashElem=gen([hash_id, elem_id], ((op_et(var(hash_id), var(elem_id))>>(star(not_modify_et(var(elem_id)))*(remove_et(var(hash_id), var(elem_id))*1)));1))).

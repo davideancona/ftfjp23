@@ -28,6 +28,7 @@ s.add(s2);
 s.remove(s1);
 s1.remove(1);
 s2.remove(1);
+s2.remove(2);
 s.remove(s2);
 s1.add(1);
 s2.add(2);
