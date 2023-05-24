@@ -1,10 +1,10 @@
 new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
 not_new_hash not matches new_hash(_);
-modify(targ_id) matches {event:'func_post', targetId:targ_id, name:'add' | 'remove', res:true};
-not_modify_remove(hash_id,elem_id) not matches remove(hash_id,elem_id) | modify(elem_id);
 add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
 not_add(hash_id) not matches add(hash_id,_);
 remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
+modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
+not_modify_remove(hash_id,elem_id) not matches remove(hash_id,elem_id) | modify(elem_id);
 op(hash_id,elem_id) matches {targetId:hash_id} | {targetId:elem_id};
 relevant matches new_hash(_) | modify(_);
 

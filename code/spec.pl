@@ -3,13 +3,13 @@
 :- use_module(library(clpr)).
 match(_event, new_hash_et(Hash_id)) :- deep_subdict(_event, _{event:"func_post", name:"HashSet", resultId:Hash_id}).
 match(_event, not_new_hash_et) :- not(match(_event, new_hash_et(_))).
-match(_event, modify_et(Targ_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Targ_id, name:"add", res:true}).
-match(_event, modify_et(Targ_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Targ_id, name:"remove", res:true}).
-match(_event, not_modify_remove_et(Hash_id, Elem_id)) :- not(match(_event, remove_et(Hash_id, Elem_id))),
-	not(match(_event, modify_et(Elem_id))).
 match(_event, add_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Hash_id, name:"add", argIds:[Elem_id], res:true}).
 match(_event, not_add_et(Hash_id)) :- not(match(_event, add_et(Hash_id, _))).
 match(_event, remove_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{event:"func_post", targetId:Hash_id, name:"remove", argIds:[Elem_id], res:true}).
+match(_event, modify_et(Targ_id)) :- match(_event, add_et(Targ_id, _)).
+match(_event, modify_et(Targ_id)) :- match(_event, remove_et(Targ_id, _)).
+match(_event, not_modify_remove_et(Hash_id, Elem_id)) :- not(match(_event, remove_et(Hash_id, Elem_id))),
+	not(match(_event, modify_et(Elem_id))).
 match(_event, op_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{targetId:Hash_id}).
 match(_event, op_et(Hash_id, Elem_id)) :- deep_subdict(_event, _{targetId:Elem_id}).
 match(_event, relevant_et) :- match(_event, new_hash_et(_)).
