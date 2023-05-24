@@ -5,7 +5,7 @@ in Java \cite{Bloch18,OkanoHSON19} and other object-oriented languages as C\#, K
 of object equality and hash code; however, less attention has been devoted to the potentially dangerous effects of the redefinition of 
 \lstinline{hashCode} in mutable classes when their instances are used in container objects implemented with hash tables.
 
-In Java (and Kotlin and Scala as well)  such a problem is more serious because the API mutable classes implementing interface \lstinline{java.util.Collection} redefine method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
+In Java (and Kotlin and Scala as well)  such a problem is more serious because the API mutable classes implementing interface \lstinline{Collection}\footnote{For brevity we refer to types in \lstinline{java.util} with their simple names.} redefine method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
 
 Let us consider this simple example:
 \begin{lstlisting}[numbers=left]
@@ -18,7 +18,7 @@ assert sset.contains(s); // failure
 s.add(1);
 assert sset.contains(s); // success
 \end{lstlisting}
-Two sets are created with class \lstinline{java.util.HashSet}; in such a class method \lstinline{hashCode} of the elements is used to identify the
+Two sets are created with class \lstinline{HashSet}; in such a class method \lstinline{hashCode} of the elements is used to identify the
 bucket where they are stored in the hash table, and method \lstinline{equals} to search them in the bucket.
 After execution of the first three lines \lstinline{sset} contains \lstinline{set} as stated by the successful assertion at line 4; in turn, \lstinline{set}
 contains the three elements of type \lstinline{Integer} corresponding to 1, 2 and 3.
@@ -29,7 +29,7 @@ This does not come to surprise once one looks at the documentation and discovers
 
 Once element 1 is inserted back in \lstinline{s}, the computed hash code of the object is again that at line 4, hence assertion at line 8 succeeds. 
 
-As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{java.util.Collection} the receiver in the redefined methods \lstinline{equals} and \lstinline{hashCode} is considered as an immutable object. This should be avoided for all mutable classes whose objects may be used as keys in hash tables, because the consequence is that the object should be ``frozen'' until is no longer in the table to avoid misbehavior as described above.
+As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{Collection} the receiver in the redefined methods \lstinline{equals} and \lstinline{hashCode} is considered as an immutable object. This should be avoided for all mutable classes whose objects may be used as keys in hash tables, because the consequence is that the object should be ``frozen'' until is no longer in the table to avoid misbehavior as described above.
 
 While in C\# and Python it is still possible for the programmers to define mutable classes where the corresponding methods for
 equality and hash code are not well-behaved w.r.t. hash tables, predefined mutable collections do not exhibit the problems of Java, Kotlin and Scala.

@@ -1,3 +1,21 @@
+\section{A specification of safe use of collections in hash sets}
+In this section we show how it is possible to define a specification in \rml for dynamically verifying that hash sets and their elements of
+type \lstinline{Collection} are managed correctly to avoid the issue highlighted by the examples in the previous section.
+
+The only methods of \lstinline{Collection<E>} that can modify the state of a collection are \lstinline{add(E)} and \lstinline{remove(E)}; other methods, as \lstinline{addAll} and \lstinline{removeAll}, are defined in terms of the primitive ones \lstinline{add} and \lstinline{remove}, hence the specification we consider here covers also them. However, there are additional methods contained in subtypes of collection, consider for instance method
+\lstinline{add(int,E)} and \lstinline{remove(int)} of \lstinline{List}, which cannot be monitored through \lstinline{add(E)} and \lstinline{remove(E)}. Possible generalization of the solution presented here are discussed in the last part of this section.
+
+\paragraph{Events and event types} An interesting feature of \lstinline{add} and \lstinline{remove} is that they both return true if and only if the operation modifies the collection, hence modifications can be easily monitored at runtime, and it is possible to write a specification based only on events of type \lstinline{'func_post'}.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
+remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
+\end{lstlisting}
+
+After an event matches \lstinline{add(hash_id,elem_id)} the specification needs to verify that 
+element \lstinline{elem_id}, which has just been inserted in the hash set \lstinline{hash_id}, is not modified 
+until the element is removed from the set, that is, an event matching \lstinline{remove(hash_id,elem_id)} occurs.
+
 
 \begin{figure}[h]
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
