@@ -83,38 +83,37 @@ and the  conditional filter operator \lstinline{_ >> _ : _}.
 %Trace expressions are regular terms (a.k.a. cyclic) \cite{Courcelle83}, thus there is no need for an explicit recursion operator.
 The formal semantics of trace expressions is defined in terms of a labeled transition system \cite{RML2021}.
 
-As a very simple example, the specification \lstinline{Main} 
+As a very simple example, the specification \lstinline{Main} in \Cref{example} defines the set of event traces starting with a call to
+a constructor of class \lstinline{HashSet} returning the object id 42, followed by zero or more calls to method \lstinline{add} on target id 42 with returned value \lstinline{true} and ending with a call to method \lstinline{remove} on the same target id with returned value \lstinline{true}.
+%% The fact that the specification ends with \lstinline{all} means that after the event matching \lstinline{remove(42)} any event trace is allowed, that is, no further verification is required.
+
 \begin{figure}[h]
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
 remove(hash_id) matches {event:'func_post', targetId:hash_id, name:'remove', res:true};
 add(hash_id) matches {event:'func_post', targetId:hash_id, name:'add', res:true};
 
-Main = add(42)* remove(42) all;
+Main = new_hash(42) add(42)* remove(42);
 \end{lstlisting}
-\caption{Example of specification.}\label{list:example}
+\caption{Example of specification.}\label{example}
 \end{figure}
-defines the set of event traces consisting of zero or more calls to method \lstinline{add} on target 42 with returned value \lstinline{true},
-followed by a call to method \lstinline{remove} on the same target 42 with returned value \lstinline{true} and by any other trace.
 
 \paragraph{Parametric Specifications}
-The expression \lstinline{open(fdesc) write(fdesc)* close(fdesc)} can only verify the correct use of a single file;
-the parametric layer of \rml provides a \lstinline{let} construct \cite{AnconaFM17} for declaring variables and delimiting their scope,
-to control their dynamic instantiation through event matching.
-With such an abstraction and the shuffle operator, it is possible to write a \emph{parametric} specification
-for monitoring the access to an arbitrary number of files:
+The expression \lstinline{new_hash(42) add(42)* remove(42)} is of very limited use because it refers to a specific object id;
+however, \rml provides a \lstinline{let} construct \cite{AnconaFM17} for declaring existentially quantified variables.
+With such an abstraction and the shuffle operator, it is possible to write a \emph{parametric} specification working for any instance of class \lstinline{HashSet}:
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-Main = {let fdesc; open(fdesc) (write(fdesc)* close(fdesc)  | Main)};
+Main = {let hash_id; new_hash(hash_id) (add(hash_id)* remove(hash_id) | Main)};
 \end{lstlisting}
-When the first event matches \lstinline{open(fdesc)}, a substitution for variable 
-\lstinline{fdesc} is computed, depending from the returned value of \lstinline{fs.openSync}, and such a substitution is applied
-to the rest of the specification.
-In this way, the two occurrences of \lstinline{fdesc} on the left operand of the shuffle are correctly
-instantiated, while the substitution does not affect the right operand, consisting of the recursive
-use of \lstinline{Main}, because the nested \lstinline{let} construct allows the declaration of fresh
-variables to mask the previously instantiated variables. As a consequence, the
-next call to \lstinline{fs.openSync} is allowed to pass a different file name and return a
-different file descriptor, because the corresponding event type pattern \lstinline{open(fdesc)}
-is not instantiated yet.
+When the first event matches \lstinline{new_hash(hash_id)}, \lstinline{hash_id} is bound to the specific id returned by the constructor in the two
+occurences on the left-hand-side of the shuffle. The binding does not affect the recursive use of \lstinline{Main}
+because its nested \lstinline{let} declaration masks the outer one, thus allowing to properly verify the specified property
+for any new instance of the class.
+
+It is worth noting that such a pattern where recursion occurs on one side of shuffle (or intersection, as shown in the next section)
+is quite useful for specifying several kinds of properties \cite{RML2021} which cannot be specified with regular expressions (and hence
+with LTL which is less expressive \cite{Strejcek2004}). Indeed, while regular expressions are closed w.r.t. shuffle, they are not
+w.r.t. iterated shuffle \cite{FlickK12}; intersection allows even more expressive power since context-free languages are not closed w.r.t. such an operation \cite{RML2021}.
 
 %% At this point the shuffle operator is crucial\footnote{In order for the shuffle to work, we assume that every \(\opent\) operation always gives a fresh file descriptor, which can be reasonably assumed to be ensured by the operating system.}: following events are allowed to belong either to \(\tau\) (operations on new files, in the correct order) or to \(\tau'\{\avar{fd}\mapsto x\}\) (note the substitution!) were further operations on \(x\) will be checked.
 
