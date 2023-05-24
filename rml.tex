@@ -56,15 +56,15 @@ similarly, for the returned value the two properties \lstinline{res} and \lstinl
 not_add(hash_id) not matches add(hash_id,_);
 op(hash_id,elem_id) matches {targetId:hash_id} | {targetId:elem_id};
 \end{lstlisting}  
-The event type pattern \lstinline{not_add(hash_id)} matches all events which do not correspond to the return from
+The event pattern \lstinline{not_add(hash_id)} matches all events which do not correspond to the return from
 method \lstinline{add} called on target \lstinline{hash_id}; the wildcard \lstinline!_! is used when a value is not relevant for
 the definition of the event type.
 
-The event type pattern \lstinline{op(hash_id,elem_id)} matches all events matching either \lstinline!{targetId:hash_id}! or
+The event pattern \lstinline{op(hash_id,elem_id)} matches all events matching either \lstinline!{targetId:hash_id}! or
 \lstinline!{targetId:elem_id}!, that is, all calls on target \lstinline{hash_id} or \lstinline{elem_id}.
 
 \paragraph{Trace Expressions}
-The basic layer of \rml are expressions that define sets of event traces and built by combining together event type patterns with primitive and derived operators.
+The basic layer of \rml are expressions that define sets of event traces and built by combining together event patterns with primitive and derived operators.
 The former kind of operators includes, among others, the following binary operators on sets of event traces:
 \begin{itemize}
 	%% \item $\emptyseq$ (\emph{empty trace}): the singleton set $\{\emptyseq\}$ containing  the empty event trace $\emptyseq$;
@@ -114,7 +114,7 @@ occurences on the left-hand-side of the shuffle. The binding does not affect the
 because its nested \lstinline{let} declaration masks the outer one, thus allowing to properly verify the specified property
 for any new instance of the class.
 
-It is worth noting that such a pattern where recursion occurs on one side of shuffle (or intersection, as shown in the next section)
+It is worth noting that such a specification pattern where recursion occurs on one side of shuffle (or intersection, as shown in the next section)
 is quite useful for specifying several kinds of properties \cite{RML2021} which cannot be specified with regular expressions (and hence
 with LTL which is less expressive \cite{Strejcek2004}). Indeed, while regular expressions are closed w.r.t. shuffle, they are not
 w.r.t. iterated shuffle \cite{FlickK12}; intersection allows even more expressive power since context-free languages are not closed w.r.t. such an operation \cite{RML2021}.

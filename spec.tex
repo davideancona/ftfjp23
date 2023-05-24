@@ -1,37 +1,74 @@
 \section{A specification of safe use of collections in hash sets}
 In this section we show how it is possible to define a specification in \rml for dynamically verifying that hash sets and their elements of
-type \lstinline{Collection} are managed correctly to avoid the issue highlighted by the examples in the previous section.
+type \lstinline{Collection} are managed correctly to avoid the issue highlighted by the examples in \Cref{sec:example}.
 
 The only methods of \lstinline{Collection<E>} that can modify the state of a collection are \lstinline{add(E)} and \lstinline{remove(E)}; other methods, as \lstinline{addAll} and \lstinline{removeAll}, are defined in terms of the primitive ones \lstinline{add} and \lstinline{remove}, hence the specification we consider here covers also them. However, there are additional methods contained in subtypes of collection, consider for instance method
 \lstinline{add(int,E)} and \lstinline{remove(int)} of \lstinline{List}, which cannot be monitored through \lstinline{add(E)} and \lstinline{remove(E)}. Possible generalization of the solution presented here are discussed in the last part of this section.
 
-\paragraph{Events and event types} An interesting feature of \lstinline{add} and \lstinline{remove} is that they both return true if and only if the operation modifies the collection, hence modifications can be easily monitored at runtime, and it is possible to write a specification based only on events of type \lstinline{'func_post'}.
+\paragraph{Events and event types} Since the specification has to verify hash sets, creation of instances of \lstinline{HashTable} is a relevant event
+to be monitored.
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
+\end{lstlisting}
+Interestingly enough, creation of the elements inserted in the sets need not to be monitored, unless they are hash sets themselves;
+as seen in the examples in \Cref{sec:example}, the main point is to trace addition to new elements in sets.
+
+An interesting feature of \lstinline{add} and \lstinline{remove} of \lstinline{Collection} is that they both return true if and only if the operation modifies the collection, hence modifications can be easily monitored at runtime, and it is possible to write a specification based only on events of type \lstinline{'func_post'}.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
 remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
 \end{lstlisting}
 
-After an event matches \lstinline{add(hash_id,elem_id)} the specification needs to verify that 
+After an event matches \lstinline{add(hash_id,elem_id)}, the specification needs to verify that 
 element \lstinline{elem_id}, which has just been inserted in the hash set \lstinline{hash_id}, is not modified 
 until the element is removed from the set, that is, an event matching \lstinline{remove(hash_id,elem_id)} occurs.
+The fact that event type \lstinline{add(hash_id,elem_id)} requires the returned value to be \lstinline{true} is important to avoid
+useless checks on elements that are already contained in the set. The same constraint for \lstinline{remove(hash_id,elem_id)} is less important here
+because, by construction (see the specification below), the first event matching \lstinline{remove(hash_id,elem_id)} must necessarily be for a call returning value true, assuming correct the implementation of \lstinline{remove}.
 
+The returned value true in the definition of  \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)} is of utmost importance to avoid false positives when checking that elements in an hash set are not modified. Indeed, the only harmful calls to \lstinline{add} and
+\lstinline{remove} are those that effectively change the state of elements and, hence, their hash codes.
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
+\end{lstlisting}
+There still might be some false positive in (the quite unlikely) case a modification of the element does not change the bucket of the hash table
+where it should be contained, as already observed in \Cref{sec:example}. However, this would be hard to be checked and the policy to ban any attempt at modifying elements in a hash set is safer. One might also adopt the stricter policy of prohibiting any call to \lstinline{add} and \lstinline{remove} by omitting the requirement \lstinline{res:true} in the definition of \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)}.
+
+\paragraph{Specification}
+The whole specification of safe use of collections in hash sets can be found in \Cref{list:hash}.
 
 \begin{figure}[h]
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
 not_new_hash not matches new_hash(_);
-modify(targ_id) matches {event:'func_post', targetId:targ_id, name:'add' | 'remove', res:true};
-not_modify_remove(hash_id,elem_id) not matches remove(hash_id,elem_id) | modify(elem_id);
 add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
 not_add(hash_id) not matches add(hash_id,_);
 remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
+modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
+not_modify_remove(hash_id,elem_id) not matches remove(hash_id,elem_id) | modify(elem_id);
 op(hash_id,elem_id) matches {targetId:hash_id} | {targetId:elem_id};
-relevant matches new_hash(_) | modify(_);
 
 Main = not_new_hash* {let hash_id;new_hash(hash_id) (SafeHashTable<hash_id> /\ Main)}?;
 SafeHashTable<hash_id> = not_add(hash_id)* {let elem_id;add(hash_id,elem_id) (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)}?;
 SafeHashElem<hash_id,elem_id> = op(hash_id,elem_id) >> not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all;
 \end{lstlisting}
-\caption{Specification of safe hash setd.}\label{list:hash}
+\caption{Specification of safe hash sets.}\label{list:hash}
 \end{figure}
+
+The first part of the specification contains the definitions of all needed event types. The main types have been already introduced,
+but there are also some auxiliary types, most of them derived.
+
+The definition of the main specification \lstinline{Main} is recursive, similarly as shown in the example of parametric specification in
+\Cref{sec:example}, but the intersection operation is used instead of the shuffle. This is necessary because several hash sets may
+coexist and modification of a collection has to be checked for all of them, since such a collection could be contained in any of them.
+
+Before a new hash set is created (event pattern \lstinline{new_hash(hash_id)}), several other events relevant for the generic specification \lstinline{SafeHashTable<hash_id>} or  \lstinline{SafeHashElem<hash_id,elem_id>} may occur (trace expression \lstinline{not_new_hash*}).
+After a new hash table is created with id \lstinline{hash_id}, the specification \lstinline{SafeHashTable<hash_id>} checks the correct behavior of
+the newly created set and \lstinline{Main} manages creation of new hash sets. The regular expression operator \lstinline{?} (optionality)
+is used to consider cases where a specific run of the SUS does not create any hash table.
+
+For instance, creation of two hash sets with id 5 and 9 leads to the following specification representing the current state of the monitor generated from the initial specification: 
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+(SafeHashTable<5> /\ (SafeHashTable<9> /\ Main)?)?;
+\end{lstlisting}
