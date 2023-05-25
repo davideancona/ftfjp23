@@ -27,7 +27,7 @@ The fact that event type \lstinline{add(hash_id,elem_id)} requires the returned 
 useless checks on elements that are already contained in the set. The same constraint for \lstinline{remove(hash_id,elem_id)} is less important here
 because, by construction (see the specification below), the first event matching \lstinline{remove(hash_id,elem_id)} must necessarily be for a call returning value true, assuming correct the implementation of \lstinline{remove}.
 
-The returned value true in the definition of  \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)} is of utmost importance to avoid false positives when checking that elements in an hash set are not modified. Indeed, the only harmful calls to \lstinline{add} and
+The returned value true in the definition of  \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)} is important to avoid false positives when checking that elements in a hash set are not modified. Indeed, the only harmful calls to \lstinline{add} and
 \lstinline{remove} are those that effectively change the state of elements and, hence, their hash codes.
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
@@ -81,10 +81,12 @@ Before a new hash set is created (event pattern \lstinline{new_hash(hash_id)}), 
 After a new hash table is created with id \lstinline{hash_id}, the specification \lstinline{SafeHashTable} checks the correct behavior of
 the newly created set and \lstinline{Main} manages creation of new hash sets (trace expression \lstinline{SafeHashTable<hash_id> /\ Main}).
 
-For instance, creation of two hash sets with id 5 and 9 leads to the following specification representing the current state of the monitor generated from the initial specification: 
+For instance, after creation of two hash sets with id 5 and 9, the specification defined by \lstinline{Main} is rewritten into
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 (SafeHashTable<5> /\ (SafeHashTable<9> /\ Main)?)?;
 \end{lstlisting}
+Such a specification represents the current state of the monitor generated from \lstinline{Main}.
+
 The regular expression operator \lstinline{?} (optionality)
 is used to cover cases where a specific run of the SUS does not create any hash table.
 
@@ -103,5 +105,48 @@ not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all
 It defines the set of traces where modifications on \lstinline{elem_id} are not allowed before an event matching \lstinline{remove(hash_id,elem_id)}
 occurs. The pattern \lstinline{not_modify_remove(hash_id,elem_id)} matches all events that do not match \lstinline{modify(elem_id)} and \lstinline{remove(hash_id,elem_id)}. The latter constraint is needed to ensure that removal of \lstinline{elem_id} is checked only once, that is, the corresponding event matches pattern \lstinline{remove(hash_id,elem_id)}. 
 The predefined constant \lstinline{all} (the universe of all traces) specifies that no further checks are needed once \lstinline{elem_id} has been removed from \lstinline{hash_id}.
+
+Reconsidering the rewriting example above, after creation of two hash sets with id 5 and 9, and insertion
+of the set with id 9 into the set with id 5, the specification defined by \lstinline{Main} is rewritten into
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+((SafeHashElem<5,9> /\ SafeHashTable<5>)? /\ (SafeHashTable<9> /\ Main)?)?;
+\end{lstlisting}
+
+\paragraph{Possible generalization of the specification}
+
+The specification above deals exclusively with objects of type \lstinline{HashSet} for what concerns classes based on hash tables,
+and objects of type \lstinline{Collection} for what concerns objects of mutable classes that redefine \lstinline{hashCode}. 
+
+\subparagraph{Classes based on hash tables:} \lstinline{HashMap} is a widely used class of the Java API. To consider also this class,
+some event types, as \lstinline{new_hash} or \lstinline{add}, need to be generalized. 
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+new_hash(hash_id) matches {event:'func_post', name:'HashSet' | 'HashMap', resultId:hash_id};
+add(hash_id,elem_id) matches
+// adding to a set
+  {event:'func_post', targetId:hash_id, name:'add',  
+   argIds:[elem_id], res:true}
+ |
+// adding to a map  
+  {event:'func_post', targetId:hash_id, name:'put',  
+   argIds:[elem_id,_], res:null};
+\end{lstlisting}
+Differently from \lstinline{HashSet}, for some methods it is more challenging to keep exact track of the keys contained in a map, because \lstinline{null} values are allowed. For instance, \lstinline{put(key,value)} returns the previous value associated
+with \lstinline{key} (which may include \lstinline{null}) or \lstinline{null} if there was no mapping for \lstinline{key}.
+Hence, if we require the result to be \lstinline{null} as done above, then in some cases checking that a key is not modified can be duplicated.
+This can be more problematic when hash maps are elements of a hash set (see below).
+
+\subparagraph{Mutable classes redefining \lstinline{hashCode}:} 
+package \lstinline{java.util} provides a number of mutable classes where \lstinline{hashCode} is redefined.
+
+The specification above does not take into account that several classes implement subinterfaces of \lstinline{Collection}, such as \lstinline{List}.
+For instance, a stack can be modified with methods \lstinline{pop} and \lstinline{push} and the target object is always modified when the method is called.
+In most cases the required extension to the specification does not pose any challenge. However, there are some methods, as
+\lstinline{set(index,elem)} of \lstinline{List}, for which it is not easy to test whether the target object is modified. For instance, the method
+may replace an element in a list with the same object, or an equal object. In that case, the verification may detect more false positives.
+
+In \lstinline{java.util} there are also mutable classes redefining \lstinline{hashCode} and implementing interfaces different from
+\lstinline{Collection}. We have already considered class \lstinline{HashMap} which implements \lstinline{Map}. In a scenario where
+a hash set contains a hash map, modifications on the hash map should be avoided while it is contained in the set.
+The \lstinline{put} method above has similar problems as method \lstinline{set}, hence the verification may be less accurate.  
 
 
