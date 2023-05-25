@@ -40,18 +40,32 @@ The whole specification of safe use of collections in hash sets can be found in 
 
 \begin{figure}[h]
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
+new_hash(hash_id) matches
+  {event:'func_post', name:'HashSet', resultId:hash_id};
 not_new_hash not matches new_hash(_);
-add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
+add(hash_id,elem_id) matches
+  {event:'func_post', targetId:hash_id, name:'add',
+   argIds:[elem_id], res:true};
 not_add(hash_id) not matches add(hash_id,_);
-remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
+remove(hash_id,elem_id) matches
+  {event:'func_post', targetId:hash_id, name:'remove',
+   argIds:[elem_id], res:true};
 modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
-not_modify_remove(hash_id,elem_id) not matches remove(hash_id,elem_id) | modify(elem_id);
-op(hash_id,elem_id) matches {targetId:hash_id} | {targetId:elem_id};
+not_modify_remove(hash_id,elem_id) not matches
+  modify(elem_id) | remove(hash_id,elem_id);
+op(hash_id,elem_id) matches
+  {targetId:hash_id} | {targetId:elem_id};
 
-Main = not_new_hash* {let hash_id;new_hash(hash_id) (SafeHashTable<hash_id> /\ Main)}?;
-SafeHashTable<hash_id> = not_add(hash_id)* {let elem_id;add(hash_id,elem_id) (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)}?;
-SafeHashElem<hash_id,elem_id> = op(hash_id,elem_id) >> not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all;
+Main = not_new_hash*
+  {let hash_id;new_hash(hash_id)
+   (SafeHashTable<hash_id> /\ Main)
+  }?;
+SafeHashTable<hash_id> = not_add(hash_id)*
+  {let elem_id;add(hash_id,elem_id)
+   (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)
+  }?;
+SafeHashElem<hash_id,elem_id> = 
+  not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all;
 \end{lstlisting}
 \caption{Specification of safe hash sets.}\label{list:hash}
 \end{figure}
@@ -63,12 +77,31 @@ The definition of the main specification \lstinline{Main} is recursive, similarl
 \Cref{sec:example}, but the intersection operation is used instead of the shuffle. This is necessary because several hash sets may
 coexist and modification of a collection has to be checked for all of them, since such a collection could be contained in any of them.
 
-Before a new hash set is created (event pattern \lstinline{new_hash(hash_id)}), several other events relevant for the generic specification \lstinline{SafeHashTable<hash_id>} or  \lstinline{SafeHashElem<hash_id,elem_id>} may occur (trace expression \lstinline{not_new_hash*}).
-After a new hash table is created with id \lstinline{hash_id}, the specification \lstinline{SafeHashTable<hash_id>} checks the correct behavior of
-the newly created set and \lstinline{Main} manages creation of new hash sets. The regular expression operator \lstinline{?} (optionality)
-is used to consider cases where a specific run of the SUS does not create any hash table.
+Before a new hash set is created (event pattern \lstinline{new_hash(hash_id)}), several other events relevant for the generic specifications \lstinline{SafeHashTable} or  \lstinline{SafeHashElem} may occur (trace expression \lstinline{not_new_hash*}).
+After a new hash table is created with id \lstinline{hash_id}, the specification \lstinline{SafeHashTable} checks the correct behavior of
+the newly created set and \lstinline{Main} manages creation of new hash sets (trace expression \lstinline{SafeHashTable<hash_id> /\ Main}).
 
 For instance, creation of two hash sets with id 5 and 9 leads to the following specification representing the current state of the monitor generated from the initial specification: 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 (SafeHashTable<5> /\ (SafeHashTable<9> /\ Main)?)?;
 \end{lstlisting}
+The regular expression operator \lstinline{?} (optionality)
+is used to cover cases where a specific run of the SUS does not create any hash table.
+
+The definition of \lstinline{SafeHashTable} follows the same pattern as \lstinline{Main}.
+Before a new element is added to the hash set \lstinline{hash_id} (event pattern \lstinline{add(hash_id,elem_id)}), several other events relevant for the generic specification \lstinline{SafeHashTable} may occur (trace expression \lstinline{not_add(hash_id)*}).
+
+After a new element with id \lstinline{elem_id} is added, the specification \lstinline{SafeHashElem} checks that \lstinline{elem_id} is not modified
+until it is removed from \lstinline{hash_id} and \lstinline{SafeHashTable} manages addition of new elements to the hash sets
+(trace expression \lstinline{SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>}).
+
+\lstinline{SafeHashElem<hash_id,elem_id>} is defined by the trace expression
+\begin{lstlisting}
+not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all
+\end{lstlisting}
+
+It defines the set of traces where modifications on \lstinline{elem_id} are not allowed before an event matching \lstinline{remove(hash_id,elem_id)}
+occurs. The pattern \lstinline{not_modify_remove(hash_id,elem_id)} matches all events that do not match \lstinline{modify(elem_id)} and \lstinline{remove(hash_id,elem_id)}. The latter constraint is needed to ensure that removal of \lstinline{elem_id} is checked only once, that is, the corresponding event matches pattern \lstinline{remove(hash_id,elem_id)}. 
+The predefined constant \lstinline{all} (the universe of all traces) specifies that no further checks are needed once \lstinline{elem_id} has been removed from \lstinline{hash_id}.
+
+
