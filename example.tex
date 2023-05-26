@@ -1,13 +1,16 @@
-\section{Objects hash code and mutable classes}\label{sec:example}
+\section{Hash code and mutable classes}\label{sec:example}
 
 Correctness issues concerned with the relationship between methods \lstinline{equals} and \lstinline{hashCode} are well-known
 in Java \cite{Bloch18,OkanoHSON19} and other object-oriented languages as C\#, Kotlin, Scala, and Python supporting redefinition
 of object equality and hash code; however, less attention has been devoted to the potentially dangerous effects of the redefinition of 
 \lstinline{hashCode} in mutable classes when their instances are used in container objects implemented with hash tables.
 
-In Java (and Kotlin and Scala as well)  such a problem is more serious because the API mutable classes implementing interface \lstinline{Collection}\footnote{For brevity we refer to types in \lstinline{java.util} with their simple names.} redefine method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
+In Java (and Kotlin and Scala as well)  such a problem is more serious because the widely used mutable classes of \lstinline{java.util}
+implementing interfaces as \lstinline{Collection} and \lstinline{Map}\footnote{For brevity we refer to types in \lstinline{java.util} with their simple names.}  redefine method \lstinline{hashCode} as their instances where immutable (i.e. value objects).
 
-Let us consider this simple example:
+Let us consider an example, where for simplicity a unique class is used both for containers (which use a hash table) and container elements
+since \lstinline{HashTable} is a mutable class redefining \lstinline{hashCode()} and implementing \lstinline{Collection}.
+Similar examples can be built with other types of elements, for instance, linked lists.
 \begin{lstlisting}[numbers=left]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(1,2,3))

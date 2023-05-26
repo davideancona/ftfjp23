@@ -1,3 +1,14 @@
 \section{Introduction}
 
-\cite{RML2021}
+Most mainstream object-oriented languages provide a notion of equality between objects which can be customized to be weaker than
+reference equality, and which is coupled with the customizable notion of object hash code \cite{Bloch18}. Such two notions are provided
+through two corresponding methods defined in the predefined class \lstinline{Object} class which is a the root of the inheritance hierarchy; hence,
+they are inherited or redefined in any class, and callable on any type of object.
+
+For this reason, they are pervasive in object-oriented code and the correct functioning of some functionalities of many libraries rely on them;
+hence, their incorrect redefinition or use may have a serious impact on software reliability and safety.
+
+A classical example of useful redefinition of equality is for value classes, where typically a notion of logical equality is needed which differs
+from reference equality \cite{Bloch18}. Since such classes are immutable by definition, redefining equality is less problematic, although
+obeying the general contract for equality is challenging, and its redefinition invalidates the general contract for computing object hash codes. 
+In particular, implementations of hash tables are based 
