@@ -1,0 +1,20 @@
+\appendix
+\label{appendix}
+\section{Example of verified Java code}
+\begin{lstlisting}[numbers=left]
+var setset = new HashSet<Set<Integer>>();
+var set1 = new HashSet<Integer>();
+var set2 = new HashSet<Integer>();
+set1.add(1);
+set2.add(2);
+setset.add(set1);
+set1.contains(1);
+setset.add(set2);
+setset.remove(set1);
+set1.remove(1);
+set2.remove(1);
+//s2.remove(2);
+setset.remove(set2);
+set1.add(1);
+set2.add(2);
+\end{lstlisting}

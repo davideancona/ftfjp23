@@ -5,7 +5,7 @@ type \lstinline{Collection} are managed correctly to avoid the issue highlighted
 The only methods of \lstinline{Collection<E>} that can modify the state of a collection are \lstinline{add(E)} and \lstinline{remove(E)}; other methods, as \lstinline{addAll} and \lstinline{removeAll}, are defined in terms of the primitive ones \lstinline{add} and \lstinline{remove}, hence the specification we consider here covers also them. However, there are additional methods contained in subtypes of collection, consider for instance method
 \lstinline{add(int,E)} and \lstinline{remove(int)} of \lstinline{List}, which cannot be monitored through \lstinline{add(E)} and \lstinline{remove(E)}. Possible generalization of the solution presented here are discussed in the last part of this section.
 
-\paragraph{Events and event types} Since the specification has to verify hash sets, creation of instances of \lstinline{HashTable} is a relevant event
+\subsection*{Events and event types} Since the specification has to verify hash sets, creation of instances of \lstinline{HashTable} is a relevant event
 to be monitored.
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
@@ -35,7 +35,7 @@ modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
 There still might be some false positive in (the quite unlikely) case a modification of the element does not change the bucket of the hash table
 where it should be contained, as already observed in \Cref{sec:example}. However, this would be hard to be checked and the policy to ban any attempt at modifying elements in a hash set is safer. One might also adopt the stricter policy of prohibiting any call to \lstinline{add} and \lstinline{remove} by omitting the requirement \lstinline{res:true} in the definition of \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)}.
 
-\paragraph{Specification}
+\subsection*{Specification}
 The whole specification of safe use of collections in hash sets can be found in \Cref{list:hash}.
 
 \begin{figure}[h]
@@ -112,12 +112,13 @@ of the set with id 9 into the set with id 5, the specification defined by \lstin
 ((SafeHashElem<5,9> /\ SafeHashTable<5>)? /\ (SafeHashTable<9> /\ Main)?)?;
 \end{lstlisting}
 
-\paragraph{Possible generalization of the specification}
+\subsection*{Possible generalization of the specification}
 
 The specification above deals exclusively with objects of type \lstinline{HashSet} for what concerns classes based on hash tables,
 and objects of type \lstinline{Collection} for what concerns objects of mutable classes that redefine \lstinline{hashCode}. 
 
-\subparagraph{Classes based on hash tables:} \lstinline{HashMap} is a widely used class of the Java API. To consider also this class,
+\subsubsection*{Classes based on hash tables.}
+\lstinline{HashMap} is a widely used class of the Java API. To consider also this class,
 some event types, as \lstinline{new_hash} or \lstinline{add}, need to be generalized. 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 new_hash(hash_id) matches {event:'func_post', name:'HashSet' | 'HashMap', resultId:hash_id};
@@ -135,18 +136,30 @@ with \lstinline{key} (which may include \lstinline{null}) or \lstinline{null} if
 Hence, if we require the result to be \lstinline{null} as done above, then in some cases checking that a key is not modified can be duplicated.
 This can be more problematic when hash maps are elements of a hash set (see below).
 
-\subparagraph{Mutable classes redefining \lstinline{hashCode}:} 
-package \lstinline{java.util} provides a number of mutable classes where \lstinline{hashCode} is redefined.
+\subsubsection*{Mutable classes redefining \lstinline{hashCode}.} 
+Package \lstinline{java.util} provides a number of mutable classes where \lstinline{hashCode} is redefined.
 
 The specification above does not take into account that several classes implement subinterfaces of \lstinline{Collection}, such as \lstinline{List}.
 For instance, a stack can be modified with methods \lstinline{pop} and \lstinline{push} and the target object is always modified when the method is called.
+
 In most cases the required extension to the specification does not pose any challenge. However, there are some methods, as
-\lstinline{set(index,elem)} of \lstinline{List}, for which it is not easy to test whether the target object is modified. For instance, the method
-may replace an element in a list with the same object, or an equal object. In that case, the verification may detect more false positives.
+\lstinline{set(index,elem)} of \lstinline{List}, for which it is not easy to test whether the target object has been really modified.
+For instance, the method
+may replace an element in a list with the same object, or an equal object. In that case, the verification detects a false positive.
 
 In \lstinline{java.util} there are also mutable classes redefining \lstinline{hashCode} and implementing interfaces different from
 \lstinline{Collection}. We have already considered class \lstinline{HashMap} which implements \lstinline{Map}. In a scenario where
 a hash set contains a hash map, modifications on the hash map should be avoided while it is contained in the set.
-The \lstinline{put} method above has similar problems as method \lstinline{set}, hence the verification may be less accurate.  
+The \lstinline{put} method above has similar problems as method \lstinline{set}, hence the verification may be less accurate in this case.
 
+\subsubsection*{Preliminary experiments.}
+We have conducted preliminary experiments to test the correctness of the specification
+with the offline monitor generated from it by the \rml compiler.
+The monitor has been run on event traces that simulate the  execution of simple Java programs, and that have been stored in log files.
+
+\Cref{appendix} contains a code snippet of a tested program. The only critical instruction has been commented (line 12).
+
+With line 12 commented out, the corresponding trace is accepted by the monitor, as expected.
+In particolar, the monitor recognizes that the two methods called on \lstinline{set_1} while contained in \lstinline{sset}
+()
 
