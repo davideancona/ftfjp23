@@ -18,18 +18,19 @@ HashSet.prototype.contains = function (el) {
 }
 
 var sset = new HashSet();
-var set1 = new HashSet();
-var set2 = new HashSet();
-set1.add(1);
-set2.add(2);
-sset.add(set1);
-set1.add(1);
-set1.contains(1);
-sset.add(set2);
-sset.remove(set1);
-set1.remove(1);
-set2.remove(1);
-//s2.remove(2);
-sset.remove(set2);
-set1.add(1);
-set2.add(2);
+var s1 = new HashSet();
+var s2 = new HashSet();
+s1.add(1);
+s2.add(2);
+sset.add(s1);
+s1.contains(1);
+s1.add(1);
+sset.add(s2);
+sset.remove(s1);
+s2.remove(2);
+s1.remove(1);
+s2.remove(1);
+sset.remove(s2);
+s1.add(1);
+s2.add(2);
+
