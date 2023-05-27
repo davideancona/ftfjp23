@@ -169,12 +169,13 @@ reference equality, and which is coupled with the customizable notion of object 
 This feature is so pervasive in object-oriented code that incorrect redefinition or use of equality and hash code
 may have a serious impact on software reliability and safety.
 
-Despite mutable classes should not redefine equality and hash code, many widely used API libraries do that in Java and other similar languages.
+Despite redefinition of equality and hash code in mutable classes is unsafe,
+many widely used API libraries do that in Java and other similar languages.
 When objects of such classes are used as keys in hash tables, programs may exhibit unexpected and unpredictable behavior.
-In this paper we propose a Runtime Verification techniques to avoid or at least mitigate this issue.
+In this paper we propose a runtime verification solution to avoid or at least mitigate this issue.
 
-Our proposed solution uses \rml, a rewriting-based Domain Specific Language for Runtime Verification
-which allows definition of formal specifications independently of code instrumentation and of the programming language used
+Our proposal uses \rml, a rewriting-based domain specific language for runtime verification
+which is independent from code instrumentation and  the programming language used
 to develop the software to be verified. 
 \end{abstract}
 

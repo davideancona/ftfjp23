@@ -18,7 +18,7 @@ consist of properties which identify the type of event and the data associated w
     res:true,args:[1]}
 \end{lstlisting}          
 represents the event
-`call to method \lstinline{add} on target object with id 9 and with argument 1  has returned value \lstinline{true}.
+`call to method \lstinline{add} on target object with id 9 and with argument 1  has returned value \lstinline{true}'.
 Another type of events which are often useful to monitor is \lstinline{'func_pre'}, that is, entering a constructor or method call; of course, in this
 case, no information on the returned value can be provided. Depending on the features of the instrumentation tool, other finer grained types,
 as reading or updating a field, can be used, but at the cost of making specifications more coupled with the specific application that needs to be
@@ -55,7 +55,8 @@ similarly, for the returned value the two properties \lstinline{res} and \lstinl
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 not_add(hash_id) not matches add(hash_id,_);
-op(hash_id,elem_id) matches {targetId:hash_id} | {targetId:elem_id};
+op(hash_id,elem_id) matches 
+   {targetId:hash_id} | {targetId:elem_id};
 \end{lstlisting}  
 The event pattern \lstinline{not_add(hash_id)} matches all events which do not correspond to the return from
 method \lstinline{add} called on target \lstinline{hash_id}; the wildcard \lstinline!_! is used when a value is not relevant for

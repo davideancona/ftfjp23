@@ -10,10 +10,10 @@ implementing interfaces as \lstinline{Collection} and \lstinline{Map}\footnote{F
 
 Let us consider an example, where for simplicity a unique class is used both for containers (which use a hash table) and container elements
 since \lstinline{HashTable} is a mutable class redefining \lstinline{hashCode()} and implementing \lstinline{Collection}.
-Similar examples can be built with other types of elements, for instance, linked lists.
+Similar examples can be built with other types of contained elements, for instance, linked lists.
 \begin{lstlisting}[numbers=left]
 var sset = new HashSet<Set<Integer>>();
-var s = new HashSet<>(asList(1,2,3))
+var s = new HashSet<>(asList(1,2,3));
 sset.add(s); // sset is {{1,2,3}}
 assert sset.contains(s); // success
 s.remove(1);
@@ -21,18 +21,26 @@ assert sset.contains(s); // failure
 s.add(1);
 assert sset.contains(s); // success
 \end{lstlisting}
-Two sets are created with class \lstinline{HashSet}; in such a class method \lstinline{hashCode} of the elements is used to identify the
+Two sets are created with class \lstinline{HashSet}; in such a class, method \lstinline{hashCode} of the elements is used to identify the
 bucket where they are stored in the hash table, and method \lstinline{equals} to search them in the bucket.
-After execution of the first three lines \lstinline{sset} contains \lstinline{set} as stated by the successful assertion at line 4; in turn, \lstinline{set}
+After execution of the first three lines \lstinline{sset} contains \lstinline{s} as stated by the successful assertion at line 4; in turn, \lstinline{s}
 contains the three elements of type \lstinline{Integer} corresponding to 1, 2 and 3.
 
-At line 5 element 1 is removed from \lstinline{set} and at the next line the same assertion is checked again; this time the assertion fails, although no method has been invoked on \lstinline{sset} and, hence, its state should be the same as in the previous assertion.
+At line 5 element 1 is removed from \lstinline{s} and at the next line the same assertion is checked again; this time the assertion fails, although no method has been invoked on \lstinline{sset} and, hence, its state should be the same as in the previous assertion. 
 
-This does not come to surprise once one looks at the documentation and discovers that methods \lstinline{equals} and \lstinline{hashCode} are overridden in \lstinline{HashSet}\footnote{Actually, in its direct abstract superclass \lstinline{AbstractSet}.} to depend on all the elements contained in the set. As a consequence, the integer returned by  \lstinline{s.hashCode()} changes after removing element 1 from \lstinline{s} and, hence, the assertion at line 6 fails because \lstinline{s} is searched in the wrong bucket\footnote{It is still possible that the searched bucket is the right one after removing the element from \lstinline{s}, but it is quite unlikely; indeed, this is not the case for the specific example.} of the hash table of \lstinline{sset}.
+This does not come to surprise once one looks at the documentation and discovers that methods \lstinline{equals} and \lstinline{hashCode} are overridden in \lstinline{HashSet}\footnote{Actually, in its direct abstract superclass \lstinline{AbstractSet}.} to depend on all the elements contained in the set. As a consequence, the integer returned by  \lstinline{s.hashCode()} changes after removing element 1 from \lstinline{s} and, hence, the assertion at line 6 fails because \lstinline{s} is searched in the wrong bucket of the hash table of \lstinline{sset}.
+As a matter of fact, the assertions at line 4, 6, and 8 depend on the state of both \lstinline{sset} and \lstinline{s}.
+
+What is worst is that the outcome of the assertion at line 6 is unpredictable; indeed, it is still possible, although unlikely,
+that the searched bucket is the right one after removing the element from \lstinline{s}. In this case the assertion succeeds.
+Finally, considering also that the general contract states that the hash code needs not remain consistent
+from one execution of an application to another execution of the same application, we can state that 
+the behavior of assertion at line 6 can be non-deterministic.
 
 Once element 1 is inserted back in \lstinline{s}, the computed hash code of the object is again that at line 4, hence assertion at line 8 succeeds. 
 
-As stated at the beginning of this section, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{Collection} the receiver in the redefined methods \lstinline{equals} and \lstinline{hashCode} is considered as an immutable object. This should be avoided for all mutable classes whose objects may be used as keys in hash tables, because the consequence is that the object should be ``frozen'' until is no longer in the table to avoid misbehavior as described above.
+Putting it all together, the main source of the problem consists in the fact that in the mutable classes implementing \lstinline{Collection} the receiver in the redefined methods \lstinline{equals} and \lstinline{hashCode} is considered as an immutable object. This should be avoided for all mutable classes whose objects may be used as keys in hash tables, because the consequence is that the object should be ``frozen'' until is no longer in the table to avoid misbehavior as described above. In case an application does not follow this good practice, code should be verified to detect
+issues that leads to inconsistencies in hash tables. 
 
 While in C\# and Python it is still possible for the programmers to define mutable classes where the corresponding methods for
 equality and hash code are not well-behaved w.r.t. hash tables, predefined mutable collections do not exhibit the problems of Java, Kotlin and Scala.
@@ -58,7 +66,7 @@ s2=set([1,2,3])
 assert s1==s2 // success
 sset.add(s) # TypeError: unhashable type: 'set'       
 \end{lstlisting}
-In this way it is not possible to use sets, lists and dictionaries as hash table keys; this a drastic solution which prevents, for instance, to easily manage with sets of sets or lists. 
+In this way it is not possible to use sets, lists and dictionaries as hash table keys; this a drastic solution which prevents, for instance, to easily manage sets of sets or lists. 
 
 Finally, JavaScript does not support redefinition of object equality and hash code, hence does not exhibit the issue shown above. 
 \begin{lstlisting}[language=Javascript]
