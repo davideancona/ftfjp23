@@ -27,7 +27,7 @@ s1.contains(1);
 s1.add(1);
 sset.add(s2);
 sset.remove(s1);
-//s2.remove(2);
+s2.remove(2);
 s1.remove(1);
 s2.remove(1);
 sset.remove(s2);
