@@ -57,7 +57,8 @@ not_modify_remove(hash_id,elem_id) not matches
 op(hash_id,elem_id) matches
   {targetId:hash_id} | {targetId:elem_id};
 
-Main = not_new_hash*
+Main = SafeHash!;  
+SafeHash = not_new_hash*
   {let hash_id;new_hash(hash_id)
    (SafeHashTable<hash_id> /\ Main)
   }?;
