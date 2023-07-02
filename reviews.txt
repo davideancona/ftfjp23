@@ -1,0 +1,97 @@
+SUBMISSION: 10
+TITLE: Runtime verification of hash code in mutable classes
+
+
+----------------------- REVIEW 1 ---------------------
+SUBMISSION: 10
+TITLE: Runtime verification of hash code in mutable classes
+AUTHORS: Davide Ancona, Angelo Ferrando and Viviana Mascardi
+
+----------- Overall evaluation -----------
+SCORE: -2 (reject)
+----- TEXT:
+# Summary
+The paper presents aims to check that mutable objects whose hash code change if their state changes are safely used in hashing-based data structures, i.e., they are not modified while stored in a hashing-based data structure. The paper makes one step towards this goal by proposing a RML specification to check this property for HashSet (and HashTables) and mutable objects of type Collection (but only considering that these objects are changed via the Collection interface).
+
+# Evaluation
+I think the paper looks at an important property that may be overlooked easily but can have catastrophic consequences. The presented specification is rather straightforward if one is familiar with the RML specification language, but also rather limited. In addition, it might raise false alarms and miss violations. Unfortunately, the paper does not report on (evaluation) results. It only mentions the example from the appendix. In addition, the motivation for RML was that it allows language independent specification, but I think the presented specification is at least partially dependent on the language and its library, e.g., it uses method names as identifiers and assumptions on the return value of add, remove to rule out more false alarms. I would really like to see what was promised at the beginning of the paper, namely that the approach can be used to check whether changing hash codes are an issue for the current execution for different languages. 
+
+The presentation of the paper requires major revision. First, the introduction focuses to much on different runtime verification options. Second, I would suggest to integrate the explanation of RML into the explanation of the specification. Also, Section 5 discusses related work on logging, instrumentation and runtime verification of Java in general, but does not at all relate to the property analyzed/verified in the paper.
+
+In summary, the paper looks at an interesting problem programmers are not aware of. However, the paper is not mature enough to be accepted.
+
+# Minor Remarks 
+p.1: The title should be properly capitalized.
+p.5, l.483: Why does SafeHashElem require a remove call. I think the remove - all part should be optional.
+
+
+
+----------------------- REVIEW 2 ---------------------
+SUBMISSION: 10
+TITLE: Runtime verification of hash code in mutable classes
+AUTHORS: Davide Ancona, Angelo Ferrando and Viviana Mascardi
+
+----------- Overall evaluation -----------
+SCORE: 1 (weak accept)
+----- TEXT:
+This paper proposes the use of a runtime verification approach based on RML, to detect potential problems when using mutable classes as hashes of a Map implementation in Java.
+
+In general, I think the idea and approach are worthy of discussion in the event. I believe that the discussion could be a bit broader, as mentioned below.
+
+The introduction and section 2 provide a good overview of the general problem tackled by the paper, with a concrete motivating example to illustrate. I am unsure whether we need the 3 additional code snippets (C#, Python, and JavaScript), even though it is worth mentioning something about those languages also. In any case, the Python snippet seems to have a typo, as `sset.add(s)` should use either s1 or s2
+
+Section 3 provides a brief overview of RML. If need be, some parts can be shortened to allow for better explanation of later sections. Also, the explanation of the specification is straightforward and seems adequate. 
+
+What I think is currently lacking is that the text narrows too much the problem, and only briefly discusses possible generalizations to be performed.
+
+Moreover, I would expect that the preliminary results would also mention something about performance, even though that's not the main focus of the work.
+
+Another point worth discussing is the effort of coming up with RML specifications. Of course, this is always a problem in any RV approach, so it is not a major issue.
+
+Finally, is it planned to do some sort of comparison between RML and other RV techniques? In particular JavaMOP has been used for specifying properties of Java APIs.
+
+Appendix A could be included in the text, since it is quite short.
+
+
+
+----------------------- REVIEW 3 ---------------------
+SUBMISSION: 10
+TITLE: Runtime verification of hash code in mutable classes
+AUTHORS: Davide Ancona, Angelo Ferrando and Viviana Mascardi
+
+----------- Overall evaluation -----------
+SCORE: 3 (strong accept)
+----- TEXT:
+This paper describes an attempt to investigate the constracts around
+equality and hashcode in Java via runtime verificaiton. After a
+relatively long introduction the paper discusses the sensitivities of
+Java-style hascode/equality APIs where the are requried to consider
+their objects mutable state, which means they may change over time.
+Section 3 presents the authors RML event log runtime verification
+tool, Section 4 dicusses a specification for hashcode etc, then
+sectoin 5 considered some more related work and concludes.
+
+This paper attaceks a nominally serious problem, and the use of RML I
+think will be interesting for the workshop as a whole.
+
+My main technical quibble is that the paper could present the
+advantages of the Java design --- getting better hashcode performance
+than e.g. if the hashcodes code not be redefined (presumably using an
+identity Hash of the collection *object*). I believe Smalltalk
+collections has the same issue, and most likely originated this
+design.
+
+Blowing my student's trumpet, the paper should consider
+this rather obscure paper
+
+Stephen Nelson, David J. Pearce, James Noble: Understanding the Impact
+of Collection Contracts on Design. TOOLS (48) 2010: 61-78
+ https://urlsand.esvalabs.com/?u=https%3A%2F%2Fdoi.org%2F10.1007%2F978-3-642-13953-6_4&e=ed7a584b&h=1a12eb7d&f=y&p=y 
+
+which presents the result of a runtime verification of hashcode and
+equals, and found that the hypothesised serious didn't appaer in
+runable Java from later 2000s. I wondner if that result still holds
+today.
+
+
+To encourage accountability, I'm signing my reviews in 2023
