@@ -57,8 +57,7 @@ not_modify_remove(hash_id,elem_id) not matches
 op(hash_id,elem_id) matches
   {targetId:hash_id} | {targetId:elem_id};
 
-Main = SafeHash!;  
-SafeHash = not_new_hash*
+Main = not_new_hash*
   {let hash_id;new_hash(hash_id)
    (SafeHashTable<hash_id> /\ Main)
   }?;
@@ -67,7 +66,7 @@ SafeHashTable<hash_id> = not_add(hash_id)*
    (SafeHashElem<hash_id,elem_id> /\ SafeHashTable<hash_id>)
   }?;
 SafeHashElem<hash_id,elem_id> = 
-  not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all;
+  not_modify_remove(hash_id,elem_id)* (remove(hash_id,elem_id) all)?;
 \end{lstlisting}
 \caption{Specification of safe hash sets.}\label{list:hash}
 \end{figure}
@@ -101,12 +100,15 @@ until it is removed from \lstinline{hash_id} and \lstinline{SafeHashTable} manag
 
 \lstinline{SafeHashElem<hash_id,elem_id>} is defined by the trace expression
 \begin{lstlisting}
-not_modify_remove(hash_id,elem_id)* remove(hash_id,elem_id) all
+not_modify_remove(hash_id,elem_id)* (remove(hash_id,elem_id) all)?
 \end{lstlisting}
 
 It defines the set of traces where modifications on \lstinline{elem_id} are not allowed before an event matching \lstinline{remove(hash_id,elem_id)}
 occurs. The pattern \lstinline{not_modify_remove(hash_id,elem_id)} matches all events that do not match \lstinline{modify(elem_id)} and \lstinline{remove(hash_id,elem_id)}. The latter constraint is needed to ensure that removal of \lstinline{elem_id} is checked only once, that is, the corresponding event matches pattern \lstinline{remove(hash_id,elem_id)}. 
-The predefined constant \lstinline{all} (the universe of all traces) specifies that no further checks are needed once \lstinline{elem_id} has been removed from \lstinline{hash_id}.
+The predefined constant \lstinline{all} (the universe of all traces) specifies that no further checks are needed once \lstinline{elem_id} has been removed from \lstinline{hash_id}. The use of the optional operator in \lstinline{(remove(hash_id,elem_id) all)?} reflects the fact that the specification
+is used to monitor a safety property: removing \lstinline{elem_id} from \lstinline{hash_id} is a necessary condition for considering safe
+all those operations that modify \lstinline{elem_id}, but execution can safely terminate even though \lstinline{elem_id} has not been removed,
+if no modification of \lstinline{elem_id} occurred after its insertion in \lstinline{hash_id}.
 
 Reconsidering the rewriting example above, after creation of two hash sets with id 5 and 9, and insertion
 of the set with id 9 into the set with id 5, the specification defined by \lstinline{Main} is rewritten into
