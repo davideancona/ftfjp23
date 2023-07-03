@@ -175,7 +175,7 @@ Line 12 is safe, although \lstinline{s1.remove(1)} changes the state of the obje
 If the comment at line 13 is removed, then the corresponding trace is rejected:
 \begin{lstlisting}[language={},basicstyle=\ttfamily\scriptsize]
 unmatched event #58:
-  _36544{argIds:[null],args:[2],event:func_post,name:remove,
+  _36564{argIds:[null],args:[2],event:func_post,name:remove,
          res:true,targetId:13}
 \end{lstlisting}
 Event number 58 corresponds to line 11, and 13 is the id of the object referenced by \lstinline{s2}.   

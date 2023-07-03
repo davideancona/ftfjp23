@@ -64,7 +64,7 @@ sset=set()
 s1=set([1,2,3])
 s2=set([1,2,3])
 assert s1==s2 // success
-sset.add(s) # TypeError: unhashable type: 'set'       
+sset.add(s1) # TypeError: unhashable type: 'set'       
 \end{lstlisting}
 In this way it is not possible to use sets, lists and dictionaries as hash table keys; this a drastic solution which prevents, for instance, to easily manage sets of sets or lists. 
 

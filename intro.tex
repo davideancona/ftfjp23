@@ -28,7 +28,11 @@ When objects of such classes are used as keys in hash tables, programs may exhib
 if an object is modified while contained in a hash table, then most likely the same object can no longer be found in the table
 even though no operations have been performed on the hash table.
 
-Despite redefinition of equality and hash code in mutable classes is unsafe, many widely used API libraries do that in Java and other similar languages.
+Redefinition of equality and hash code in mutable classes is unsafe, as pointed out in
+the documentation for \lstinline{java.util.Set} \cite{NelsonEtAl2010} and, similarly, \lstinline{java.util.Map}: 
+``\emph{Great care must be exercised if mutable objects are used as set elements. The behavior of a set is not specified if the value of an object is changed in a manner that affects equals comparisons while the object is an element in the set. A special case of this prohibition is that it is not permissible for a set to contain itself as an element.}''
+
+Despite this note, many widely used API libraries do that in Java and other similar languages. 
 Verifying that mutable objects with redefined hash code are used correctly in hash tables is not an easy task, because state modification needs to be tracked with a certain precision and rather complex control-oriented properties \cite{AhrendtCPS17,AnconaDF18} have to be ensured.
 
 In this paper we present a solution based on Runtime Verification (RV), a dynamic verification technique where
