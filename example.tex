@@ -11,7 +11,7 @@ implementing interfaces as \lstinline{Collection} and \lstinline{Map}\footnote{F
 Let us consider an example, where for simplicity a unique class is used both for containers (which use a hash table) and container elements
 since \lstinline{HashTable} is a mutable class redefining \lstinline{hashCode()} and implementing \lstinline{Collection}.
 Similar examples can be built with other types of contained elements, for instance, linked lists.
-\begin{lstlisting}[numbers=left]
+\begin{lstlisting}[numbers=right,numbersep=-7pt]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(1,2,3));
 sset.add(s); // sset is {{1,2,3}}
