@@ -55,13 +55,15 @@ The specification provided in \Cref{sec:spec} can be reused for other Java-like 
 in the definition of event types, needed because of the different method signatures used in the libraries.
 
 For what concerns future work, once traces can be generated from real Java programs with a specific instrumentation tool,
-two challenges should be investigated:
-\begin{itemize}
-\item scalability of the approach: benchmarks with traces generated from real programs have to be considered, to assess whether
-  the approach is scalable to verify real applications.
-\item usefulness of the approach: experiments with Java programs extensively using hash tables should be conducted to understand
-  how many true and false positives can be detected.
-\end{itemize}
+two challenges should be investigated: benchmarks with traces generated from real programs have to be considered, to understand whether
+the approach scales; experiments with Java programs extensively using hash tables should be conducted to understand
+how many true and false positives can be detected to assess the effectiveness of the approach.
+%% \begin{itemize}
+%% \item benchmarks with traces generated from real programs have to be considered, to understand whether
+%% the approach scales;
+%% \item experiments with Java programs extensively using hash tables should be conducted to understand
+%% how many true and false positives can be detected to assess the effectiveness of the approach.
+%% \end{itemize}
 
 %% Table \ref{comparison} provides a summary of the comparison of RML with some of the most widely used tools for RV of Java programs, thas shows that 
 %% RML is SUS-agnostic verification with a strong separation between instrumentation and specification of the properties to be verified. It supports parametricity, generics, and it allows to express non context-free properties. 
@@ -71,7 +73,6 @@ two challenges should be investigated:
 %% \caption{Tools for RV of Java programs and their comparison with RML.}
 %% \label{comparison}
 %% \end{table*}
-
 
 \begin{acks}
 This work was partially funded by the MUR project ``T-LADIES'' (PRIN 2020TL3X8X).

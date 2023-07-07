@@ -6,7 +6,7 @@ type \lstinline{Collection} are managed correctly to avoid the issue highlighted
 The only methods of \lstinline{Collection<E>} that can modify the state of a collection are \lstinline{add(E)} and \lstinline{remove(E)}; other methods, as \lstinline{addAll} and \lstinline{removeAll}, are defined in terms of the primitive ones \lstinline{add} and \lstinline{remove}, hence the specification we consider here covers also them. However, there are additional methods contained in subtypes of collection, consider for instance method
 \lstinline{add(int,E)} and \lstinline{remove(int)} of \lstinline{List}, which cannot be monitored through \lstinline{add(E)} and \lstinline{remove(E)}. Possible generalization of the solution presented here are discussed in the last part of this section.
 
-\subsection*{Events and event types} Since the specification has to verify hash sets, creation of instances of \lstinline{HashTable} is a relevant event
+\subsection{Events and Event Types} Since the specification has to verify hash sets, creation of instances of \lstinline{HashTable} is a relevant event
 to be monitored.
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 new_hash(hash_id) matches {event:'func_post', name:'HashSet', resultId:hash_id};
@@ -36,7 +36,7 @@ modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
 There still might be some false positive in (the quite unlikely) case a modification of the element does not change the bucket of the hash table
 where it should be contained, as already observed in \Cref{sec:example}. However, this would be hard to be checked and the policy to ban any attempt at modifying elements in a hash set is safer. One might also adopt the stricter policy of prohibiting any call to \lstinline{add} and \lstinline{remove} by omitting the requirement \lstinline{res:true} in the definition of \lstinline{add(hash_id,elem_id)} and \lstinline{remove(hash_id,elem_id)}.
 
-\subsection*{Specification}
+\subsection{Specification}
 The whole specification of safe use of collections in hash sets can be found in \Cref{list:hash}.
 
 \begin{figure}[h]
@@ -116,22 +116,20 @@ of the set with id 9 into the set with id 5, the specification defined by \lstin
 ((SafeHashElem<5,9> /\ SafeHashTable<5>)? /\ (SafeHashTable<9> /\ Main)?)?;
 \end{lstlisting}
 
-\subsection*{Possible generalization of the specification}
+\subsection{Possible Generalization of the Specification}
 
 The specification above deals exclusively with objects of type \lstinline{HashSet} for what concerns classes based on hash tables,
 and objects of type \lstinline{Collection} for what concerns objects of mutable classes that redefine \lstinline{hashCode}. 
 
-\subsubsection*{Classes based on hash tables.}
+\subsubsection{Classes Based on Hash Tables.}
 \lstinline{HashMap} is a widely used class of the Java API. To consider also this class,
 some event types, as \lstinline{new_hash} or \lstinline{add}, need to be generalized. 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 new_hash(hash_id) matches {event:'func_post', name:'HashSet' | 'HashMap', resultId:hash_id};
-add(hash_id,elem_id) matches
-// adding to a set
+add(hash_id,elem_id) matches // addition to a set
   {event:'func_post', targetId:hash_id, name:'add',  
    argIds:[elem_id], res:true}
- |
-// adding to a map  
+ |   // addition to a map  
   {event:'func_post', targetId:hash_id, name:'put',  
    argIds:[elem_id,_], res:null};
 \end{lstlisting}
@@ -140,7 +138,7 @@ with \lstinline{key} (which may include \lstinline{null}) or \lstinline{null} if
 Hence, if we require the result to be \lstinline{null} as done above, then in some cases checking that a key is not modified can be duplicated.
 This can be more problematic when hash maps are elements of a hash set (see below).
 
-\subsubsection*{Mutable classes redefining \lstinline{hashCode}.} 
+\subsubsection{Mutable Classes Redefining \lstinline{hashCode}.} 
 Package \lstinline{java.util} provides a number of mutable classes where \lstinline{hashCode} is redefined.
 
 The specification above does not take into account that several classes implement subinterfaces of \lstinline{Collection}, such as \lstinline{List}.
@@ -156,12 +154,29 @@ In \lstinline{java.util} there are also mutable classes redefining \lstinline{ha
 a hash set contains a hash map, modifications on the hash map should be avoided while it is contained in the set.
 The \lstinline{put} method above has similar problems as method \lstinline{set}, hence the verification may be less accurate in this case.
 
-\subsubsection*{Preliminary experiments.}
+\subsubsection{Preliminary Experiments.}
 We have conducted preliminary experiments to test the correctness of the specification
 with the offline monitor generated from it by the \rml compiler.
-The monitor has been run on event traces that simulate the  execution of simple Java programs, and that have been stored in log files.
-
-\Cref{appendix} contains a code snippet of a tested program. The only critical instruction has been commented.
+The monitor has been run on event traces that simulate the  execution of simple Java programs, as shown below, and that have been stored in log files.
+\begin{lstlisting}[numbers=left]
+var sset = new HashSet<Set<Integer>>();
+var s1 = new HashSet<Integer>();
+var s2 = new HashSet<Integer>();
+s1.add(1);
+s2.add(2);
+sset.add(s1);
+s1.contains(1);
+s1.add(1);
+sset.add(s2);
+sset.remove(s1);
+//s2.remove(2);
+s1.remove(1);
+s2.remove(1);
+sset.remove(s2);
+s1.add(1);
+s2.add(2);
+\end{lstlisting}
+The only critical instruction has been commented.
 Indeed, at line 11 an element of \lstinline{s2} is removed, while \lstinline{s2} is in the hash set \lstinline{sset}.
 
 With line 11 commented, the corresponding trace is accepted by the monitor, as expected.
@@ -172,10 +187,10 @@ while contained in \lstinline{sset} (lines 7 and 8) are safe because do not chan
 Line 12 is safe, although \lstinline{s1.remove(1)} changes the state of the object, because \lstinline{s1} no longer belongs to
 \lstinline{sset}; the same consideration for \lstinline{s1} applies to line 15 and line 16 for \lstinline{s2}. 
 
-If the comment at line 13 is removed, then the corresponding trace is rejected:
-\begin{lstlisting}[language={},basicstyle=\ttfamily\scriptsize]
-unmatched event #58:
-  _36564{argIds:[null],args:[2],event:func_post,name:remove,
-         res:true,targetId:13}
-\end{lstlisting}
-Event number 58 corresponds to line 11, and 13 is the id of the object referenced by \lstinline{s2}.   
+If the comment at line 13 is removed, then the corresponding trace is rejected.
+%% \begin{lstlisting}[language={},basicstyle=\ttfamily\scriptsize]
+%% unmatched event #58:
+%%   _36564{argIds:[null],args:[2],event:func_post,name:remove,
+%%          res:true,targetId:13}
+%% \end{lstlisting}
+%% Event number 58 corresponds to line 11, and 13 is the id of the object referenced by \lstinline{s2}.   

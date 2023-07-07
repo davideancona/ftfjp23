@@ -69,13 +69,13 @@ sset.add(s1) # TypeError: unhashable type: 'set'
 In this way it is not possible to use sets, lists and dictionaries as hash table keys; this a drastic solution which prevents, for instance, to easily manage sets of sets or lists. 
 
 Finally, JavaScript does not support redefinition of object equality and hash code, hence does not exhibit the issue shown above. 
-\begin{lstlisting}[language=Javascript]
-let sset=new Set();                                                           
-let s=new Set([1,2,3]); // sset is {{1,2,3}}                                                         
-sset.add(s);
-console.assert(sset.has(s)); // success
-s.delete(1);
-console.assert( sset.has(s)); // success
-s.add(1);
-console.assert( sset.has(s)); // success
-\end{lstlisting}
+%% \begin{lstlisting}[language=Javascript]
+%% let sset=new Set();                                                           
+%% let s=new Set([1,2,3]); // sset is {{1,2,3}}                                                         
+%% sset.add(s);
+%% console.assert(sset.has(s)); // success
+%% s.delete(1);
+%% console.assert( sset.has(s)); // success
+%% s.add(1);
+%% console.assert( sset.has(s)); // success
+%% \end{lstlisting}
