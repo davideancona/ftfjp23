@@ -1,0 +1,96 @@
+\documentclass[10pt,usenames,dvipsnames]{beamer}
+
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{centernot}
+\usepackage{xspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+%%\usepackage{macros}
+
+%% Angelo's packages
+
+\usepackage[utf8]{inputenx} % For æ, ø, å
+\usepackage{csquotes}       % Quotation marks
+\usepackage{microtype}      % Improved typography
+\usepackage{amssymb}        % Mathematical symbols
+\usepackage{mathtools}      % Mathematical symbols
+\usepackage{stmaryrd}
+\usepackage[absolute, overlay]{textpos} % Arbitrary placement
+\setlength{\TPHorizModule}{\paperwidth} % Textpos units
+\setlength{\TPVertModule}{\paperheight} % Textpos units
+\usepackage{tikz}
+\usetikzlibrary{overlay-beamer-styles}  % Overlay effects for TikZ
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{url}
+\usepackage{doi}
+\usepackage[all]{xy}
+
+\lstset{
+	morekeywords={not,false,true,none,any,empty,matches,all,let,if,else,with,abs},
+	keywordstyle=\color{blue},
+	morestring=[b]',
+	stringstyle=\color{violet},
+	morecomment=[l]{//},
+	commentstyle=\color{cyan},
+	mathescape=true,
+	basicstyle=\ttfamily,
+	captionpos=b,
+	tabsize=4,
+	breaklines,
+	breakatwhitespace,
+	showstringspaces=false,
+	keepspaces
+}
+
+\lstset{literate={\\/}{$\orop$}2 {/\\}{$\andop$}2 {|}{$\shuffleop$}1 {!}{$\closop$}1 {>>}{$\filterop$}2 {:}{$:$}1}
+
+%\usetheme[secfooter]{PaloAlto}
+%\usetheme[secfooter]{Hannover}
+%\usetheme[]{CambridgeUS}
+\usetheme[secfooter]{UiB}
+
+\usebackgroundtemplate{\hspace*{.85\textwidth}\includegraphics[keepaspectratio,width=.2\textwidth]{images/logoBW.png}}
+
+\title[Runtime Verification of Hash Code in Mutable Classes]{Runtime Verification of Hash Code in Mutable Classes} 
+
+\author[D. Ancona]{\underline{Davide Ancona}, Angelo Ferrando and \\ Viviana Mascardi \\[1ex]
+  \small DIBRIS, Universit\`a di Genova, Italy}
+
+\institute[]{DIBRIS, Universit\`a di Genova, Italy}
+\date[FTfJP23]{Formal Techniques for Java-like Languages, July 18, 2023}
+\subject{}
+
+%% \AtBeginSection[]
+%% {
+%%     \begin{frame}
+%%         \frametitle{Table of Contents}
+%%         \tableofcontents[currentsection]
+%%     \end{frame}
+%% }
+
+\begin{document}
+
+%%\frame{\titlepage}
+
+\begin{frame}{Outline}
+\tableofcontents%[currentsection]
+\end{frame}
+
+\section{Object equality and hash code}
+
+\begin{frame}{Q\&A time}
+\vspace*{16ex}
+  \begin{center}
+  \LARGE Thank you!
+\end{center}
+\end{frame}
+
+\end{document}
