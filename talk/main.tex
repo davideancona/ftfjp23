@@ -8,7 +8,7 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{graphicx}
-%%\usepackage{macros}
+\usepackage{macros}
 
 %% Angelo's packages
 
@@ -33,24 +33,7 @@
 \usepackage{doi}
 \usepackage[all]{xy}
 
-\lstset{
-	morekeywords={not,false,true,none,any,empty,matches,all,let,if,else,with,abs},
-	keywordstyle=\color{blue},
-	morestring=[b]',
-	stringstyle=\color{violet},
-	morecomment=[l]{//},
-	commentstyle=\color{cyan},
-	mathescape=true,
-	basicstyle=\ttfamily,
-	captionpos=b,
-	tabsize=4,
-	breaklines,
-	breakatwhitespace,
-	showstringspaces=false,
-	keepspaces
-}
-
-\lstset{literate={\\/}{$\orop$}2 {/\\}{$\andop$}2 {|}{$\shuffleop$}1 {!}{$\closop$}1 {>>}{$\filterop$}2 {:}{$:$}1}
+\lstset{language=Java,basicstyle=\ttfamily\footnotesize,commentstyle=\itshape,morekeywords={assert},keywordstyle=\ttfamily\bfseries}
 
 %\usetheme[secfooter]{PaloAlto}
 %\usetheme[secfooter]{Hannover}
@@ -85,6 +68,267 @@
 \end{frame}
 
 \section{Object equality and hash code}
+
+\begin{frame}{Contract for equality and hash code}
+  \begin{block}{Features of most object-oriented languages}
+    \begin{itemize}
+    \item two different notions of equality
+      \begin{itemize}
+      \item by reference, predefined (\lstinline{==})
+      \item weaker equality, user-defined (\lstinline{equals})
+      \end{itemize}
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{General contract in \lstinline{java.lang.Object}}
+    \emph{If two objects are equal, then the same hash code must be computed for them}
+  \end{block}
+
+    \begin{block}{Reason}
+      Classes as \lstinline{HashSet} or \lstinline{HashMap} rely on \lstinline{equals} and \lstinline{hashCode}:
+      \begin{itemize}
+      \item \lstinline{hashCode} is used to retrieve a specific bucket
+      \item \lstinline{equals} is used to find an element in such a specific bucket        
+        \end{itemize}
+  \end{block}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Contract for equality and hash code}
+  \begin{block}{A stricter contract in \lstinline{java.util.Set}}
+    \emph{Great care must be exercised if mutable objects are used as set elements.}\\[1ex]
+    \emph{The behavior of a set is not specified if the value of an object is changed in a way that affects equals comparisons while the object is an element in the set.} \\[1ex]
+    \emph{A special case of this prohibition is that it is not permissible for a set to contain itself as an element.} 
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Contract for equality and hash code}
+  \begin{block}{A simple example}
+    \begin{lstlisting}[language=Java]
+var sset = new HashSet<Set<Integer>>();
+var s = new HashSet<>(asList(1)); // s is {1}
+sset.add(s); // sset is {{1}}
+assert sset.contains(s); 
+s.remove(1);
+assert sset.contains(s); 
+s.add(1);
+assert sset.contains(s); 
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Contract for equality and hash code}
+  \begin{block}{A simple example}
+    \begin{lstlisting}[language=Java]
+var sset = new HashSet<Set<Integer>>();
+var s = new HashSet<>(asList(1)); // s is {1}
+sset.add(s); // sset is {{1}}
+assert sset.contains(s); // success
+s.remove(1);
+assert sset.contains(s); // failure
+s.add(1);
+assert sset.contains(s); // success
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Contract for equality and hash code}
+  \begin{block}{Another example}
+    \begin{lstlisting}[language=Java]
+var sset = new HashSet<Set<Integer>>();
+var s = new HashSet<>(asList(0)); // s is {0}
+sset.add(s); // sset is {{0}}
+assert sset.contains(s); 
+s.remove(0);
+assert sset.contains(s); 
+s.add(0);
+assert sset.contains(s); 
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Contract for equality and hash code}
+  \begin{block}{Another example}
+    \begin{lstlisting}[language=Java]
+var sset = new HashSet<Set<Integer>>();
+var s = new HashSet<>(asList(0)); // s is {0}
+sset.add(s); // sset is {{0}}
+assert sset.contains(s); // success
+s.remove(0);
+assert sset.contains(s); // success!
+s.add(0);
+assert sset.contains(s); // success
+    \end{lstlisting}
+  \end{block}
+
+  \begin{block}{Issues}
+    \begin{itemize}
+    \item almost unpredictable code behavior
+    \item non-deterministic behavior if \lstinline{hashCode} depends on object references
+      \begin{itemize}
+      \item object references may change from one execution to another 
+      \item hash code needs not remain consistent from one execution to another 
+      \end{itemize}    
+    \end{itemize}    
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Theory versus practice}
+  \begin{block}{Theory}
+    \begin{itemize}
+    \item mutable classes should not redefine \lstinline{equals}
+    \item weaker contract: \lstinline{hashCode} should not depend on ``mutable'' fields
+    \end{itemize}   
+  \end{block}
+
+  \begin{block}{Practice}
+    \begin{itemize}
+    \item mutable classes of \lstinline{java.util.Collection} do not satisfy such a contract 
+    \item similar problems in Kotlin and Scala, but not in C\#
+    \end{itemize}   
+  \end{block}
+
+
+    \begin{block}{Aims}
+    \begin{itemize}
+    \item verify that \lstinline{Collection} objects are not modified while in a hash table
+    \item proposed solution: Runtime Verification (RV)
+    \end{itemize}   
+  \end{block}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+	morekeywords={not,false,true,none,any,empty,matches,all,let,if,else,with,abs},
+	keywordstyle=\color{blue},
+	morestring=[b]',
+	stringstyle=\color{violet},
+	morecomment=[l]{//},
+	commentstyle=\color{cyan},
+	mathescape=true,
+	basicstyle=\ttfamily,
+	captionpos=b,
+	tabsize=4,
+	breaklines,
+	breakatwhitespace,
+	showstringspaces=false,
+	keepspaces
+}
+
+\lstset{literate={\\/}{$\orop$}2 {/\\}{$\andop$}2 {|}{$\shuffleop$}1 {!}{$\closop$}1 {>>}{$\filterop$}2 {:}{$:$}1}
+
+\section{Runtime Verification and \rml}
+
+\begin{frame}{Runtime verification}
+
+  \begin{block}{Definition}
+    Runtime Verification (RV) is a \hl{verification technique} that allows for checking whether a \hl{run} of a system under scrutiny (SUS) \hl{satisfies or violates} a given correctness property.
+  \end{block}
+
+  \begin{block}{Main ingredients}
+   \begin{itemize}
+   \item run = possibly infinite event trace
+   \item instrumentation = generates the relevant events
+   \item formal specification = a set of event traces     
+   \item monitor =  generated from a specification, dynamically checks finite prefixes of a run 
+\end{itemize}
+  \end{block}
+
+\end{frame}
+
+\begin{frame}{Runtime verification}
+
+  \begin{center}
+    \includegraphics[keepaspectratio,height=0.7\textheight]{images/rv}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Why RV?}
+  \begin{block}{RV bridges the gap between formal verification and testing}
+    \begin{itemize}
+    \item the notion of event trace abstracts over system runs
+    \item RV offers error recovery, self-adaptation, and issues that go beyond software reliability
+    \item some information available only at runtime
+    \item the behavior of an application may depend heavily on the environment of the target system
+    \item if security is an issue, RV provides cast-iron guarantees for properties that have been statically proved or tested
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{RV taxonomy}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.59\linewidth]{images/example6.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{RV taxonomy}
+  \begin{block}{Stages of monitoring}
+    \begin{itemize}
+    \item \hl{on line}
+      \begin{itemize}
+      \item during execution of the system
+      \item storing of the trace unnecessary
+      \item      supports runtime enforcement
+      \end{itemize}
+    \item \hl{off line}
+      \begin{itemize}
+      \item  after execution of the system, with the trace stored in log files
+      \item      does not support runtime enforcement
+      \item complementary to testing and debugging
+      \end{itemize}
+    \end{itemize}
+  \end{block}
+
+\end{frame}
+
+
+\begin{frame}{\rml}
+  \begin{center}
+    \includegraphics[height=0.7\textheight]{images/rmlweb}
+  \end{center}
+
+  \rml Web page: \href{https://rmlatdibris.github.io/}{https://rmlatdibris.github.io/}
+\end{frame}
+
+\begin{frame}{\rml}
+
+  \begin{block}{Main aims of \rml}
+    \begin{itemize}
+    \item \hl{formal language approach}: extension of deterministic CF grammars 
+    \item \hl{usability}: developers are familiar with regular expressions and grammars
+    \item \hl{expressive power}: more expressive than deterministic CF grammars
+    \item \hl{interoperability}: system agnostic, events in independent format
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{\rml}
+  \begin{block}{Structure of \rml specifications}
+    Four different layers
+    \begin{itemize}
+    \item \hl{event types}: relevant events 
+    \item \hl{trace expressions}: primitive and derived operators for defining sets of event traces
+    \item \hl{parametricity}: existential quantification w.r.t. data carried by events
+    \item \hl{genericity}: specification with parameters to enhance modularity, reuse and expressive power
+    \end{itemize}
+  \end{block}
+\end{frame}
 
 \begin{frame}{Q\&A time}
 \vspace*{16ex}
