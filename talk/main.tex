@@ -315,12 +315,13 @@ assert sset.contains(s); // success
 
 \begin{frame}{\rml}
 
-  \begin{block}{Main aims of \rml}
+  \begin{block}{Main features of \rml}
     \begin{itemize}
-    \item \hl{formal language approach}: extension of deterministic CF grammars 
+    \item inspired by \hl{global session types}
+    \item based on \hl{formal languages}: extension of deterministic CF grammars 
     \item \hl{usability}: developers are familiar with regular expressions and grammars
     \item \hl{expressive power}: more expressive than deterministic CF grammars
-    \item \hl{interoperability}: system agnostic, events in independent format
+    \item \hl{interoperability}: clear separation between specification and instrumentation
     \end{itemize}
   \end{block}
 \end{frame}
@@ -389,7 +390,7 @@ modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
 \begin{frame}{\rml semantics}
   \begin{block}{In a nutshell}
     \begin{itemize}
-    \item based on a the notion of Brzozowski derivative 
+    \item based on the notion of Brzozowski derivative 
     \item defined by a labeled transition systems with rewriting rules
     \item labels are the monitored events
     \item the initial state is the specification of the property
