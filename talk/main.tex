@@ -250,6 +250,8 @@ assert sset.contains(s); // success
 
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}{Runtime verification}
 
   \begin{center}
@@ -257,6 +259,8 @@ assert sset.contains(s); // success
   \end{center}
 
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Why RV?}
   \begin{block}{RV bridges the gap between formal verification and testing}
@@ -270,33 +274,34 @@ assert sset.contains(s); // success
   \end{block}
 \end{frame}
 
-\begin{frame}{RV taxonomy}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.59\linewidth]{images/example6.png}
-    \end{figure}
-\end{frame}
+%% \begin{frame}{RV taxonomy}
+%%     \begin{figure}
+%%         \centering
+%%         \includegraphics[width=0.59\linewidth]{images/example6.png}
+%%     \end{figure}
+%% \end{frame}
 
-\begin{frame}{RV taxonomy}
-  \begin{block}{Stages of monitoring}
-    \begin{itemize}
-    \item \hl{on line}
-      \begin{itemize}
-      \item during execution of the system
-      \item storing of the trace unnecessary
-      \item      supports runtime enforcement
-      \end{itemize}
-    \item \hl{off line}
-      \begin{itemize}
-      \item  after execution of the system, with the trace stored in log files
-      \item      does not support runtime enforcement
-      \item complementary to testing and debugging
-      \end{itemize}
-    \end{itemize}
-  \end{block}
+%% \begin{frame}{RV taxonomy}
+%%   \begin{block}{Stages of monitoring}
+%%     \begin{itemize}
+%%     \item \hl{on line}
+%%       \begin{itemize}
+%%       \item during execution of the system
+%%       \item storing of the trace unnecessary
+%%       \item      supports runtime enforcement
+%%       \end{itemize}
+%%     \item \hl{off line}
+%%       \begin{itemize}
+%%       \item  after execution of the system, with the trace stored in log files
+%%       \item      does not support runtime enforcement
+%%       \item complementary to testing and debugging
+%%       \end{itemize}
+%%     \end{itemize}
+%%   \end{block}
 
-\end{frame}
+%% \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{\rml}
   \begin{center}
@@ -305,6 +310,8 @@ assert sset.contains(s); // success
 
   \rml Web page: \href{https://rmlatdibris.github.io/}{https://rmlatdibris.github.io/}
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{\rml}
 
@@ -318,9 +325,10 @@ assert sset.contains(s); // success
   \end{block}
 \end{frame}
 
-\begin{frame}{\rml}
-  \begin{block}{Structure of \rml specifications}
-    Four different layers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Structure of \rml specifications}
+  \begin{block}{Four layers}
     \begin{itemize}
     \item \hl{event types}: relevant events 
     \item \hl{trace expressions}: primitive and derived operators for defining sets of event traces
@@ -329,6 +337,141 @@ assert sset.contains(s); // success
     \end{itemize}
   \end{block}
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Events and event types in \rml}
+  \begin{block}{An event trace}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+$\ldots$
+{"event":"func_pre","name":"add","targetId":5,"argIds":[13]}      
+{"event":"func_post","name":"add","res":true,"targetId":5,"argIds":[13]}
+{"event":"func_pre","name":"remove","targetId":5,"argIds":[9]}
+{"event":"func_post","name":"remove","res":true,"targetId":5,"argIds":[9]}
+$\ldots$
+    \end{lstlisting}
+  \end{block}
+
+  \begin{block}{Event type declarations}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'add', argIds:[elem_id], res:true};
+remove(hash_id,elem_id) matches {event:'func_post', targetId:hash_id, name:'remove', argIds:[elem_id], res:true};
+
+modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{\rml specifications}
+  \begin{center}
+    \includegraphics[keepaspectratio,width=1.4\textheight]{images/RMLfragAnnot2}
+  \end{center}
+
+%%        \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+
+
+
+
+%% Main = not_new_hash*
+%%       {let hash_id;new_hash(hash_id)(SafeHashTable<hash_id>/\Main)}?;
+
+
+
+
+
+%% SafeHashTable<hash_id> = $\ldots$
+%%     \end{lstlisting}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{\rml semantics}
+  \begin{block}{In a nutshell}
+    \begin{itemize}
+    \item based on a the notion of Brzozowski derivative 
+    \item defined by a labeled transition systems with rewriting rules
+    \item labels are the monitored events
+    \item the initial state is the specification of the property
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{\rml semantics}
+  \begin{center}
+    \includegraphics[keepaspectratio,height=0.85\textheight]{images/semantics}
+  \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Specification of safe hash sets}
+
+\begin{frame}[fragile]{Specification of safe hash sets}
+  \begin{block}{Declaration of event types}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+new_hash(hash_id) matches
+  {event:'func_post', name:'HashSet', resultId:hash_id};
+not_new_hash not matches new_hash(_);
+
+add(hash_id,elem_id) matches
+  {event:'func_post', targetId:hash_id, name:'add',
+   argIds:[elem_id], res:true};
+not_add(hash_id) not matches add(hash_id,_);
+
+remove(hash_id,elem_id) matches
+  {event:'func_post', targetId:hash_id, name:'remove',
+   argIds:[elem_id], res:true};
+
+modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
+
+not_modify_remove(hash_id,elem_id) not matches
+  modify(elem_id) | remove(hash_id,elem_id);
+op(hash_id,elem_id) matches
+  {targetId:hash_id} | {targetId:elem_id};      
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Specification of safe hash sets}
+  \begin{block}{Whole specification}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+Main = not_new_hash*
+  {let hash_id;new_hash(hash_id)(SafeHashSet<hash_id> /\ Main)}?;
+
+SafeHashSet<hash_id> = not_add(hash_id)*
+  {let elem_id;add(hash_id,elem_id)(SafeHashElem<hash_id,elem_id> /\ SafeHashSet<hash_id>)}?;
+
+SafeHashElem<hash_id,elem_id> = not_modify_remove(hash_id,elem_id)* (remove(hash_id,elem_id) all)?;
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Monitor at work}
+  \begin{block}{Events}
+    \begin{itemize}
+    \item  new hash set with id 5
+    \item  new hash set with id 9
+    \item insertion of set with id 9 into set with id 5  
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Reached state}
+    \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+
+(SafeHashElem<5,9> /\ SafeHashSet<5>) /\ (SafeHashSet<9> /\ Main);
+
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Q\&A time}
 \vspace*{16ex}
