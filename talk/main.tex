@@ -474,6 +474,88 @@ SafeHashElem<hash_id,elem_id> = not_modify_remove(hash_id,elem_id)* (remove(hash
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}[fragile]{Monitor at work}
+  \begin{block}{Preliminary experiments}
+    \begin{itemize}
+    \item  aim: validation of the specification 
+    \item  on event traces that simulate the  execution of simple Java programs
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Monitor at work}
+  \begin{block}{Preliminary experiments: example}
+    \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+var sset = new HashSet<Set<Integer>>();
+var s1 = new HashSet<Integer>();
+var s2 = new HashSet<Integer>();
+s1.add(1);
+s2.add(2);
+sset.add(s1);
+s1.contains(1);
+s1.add(1);
+sset.add(s2);
+sset.remove(s1);
+//s2.remove(2);
+s1.remove(1);
+s2.remove(1);
+sset.remove(s2);
+s1.add(1);
+s2.add(2);
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Future work}
+  \begin{block}{Generalization of the specification}
+    \begin{itemize}
+    \item consider more methods and classes of \lstinline{java.util.Collection}
+    \item consider other object-oriented languages
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Future work}
+  \begin{block}{Consider more methods and classes}
+    \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+new_hash(hash_id) matches {event:'func_post', name:'HashSet' | 'HashMap', resultId:hash_id};
+
+add(hash_id,elem_id) matches // addition to a set
+  {event:'func_post', targetId:hash_id, name:'add',  
+   argIds:[elem_id], res:true}
+ |   // addition to a map  
+  {event:'func_post', targetId:hash_id, name:'put',  
+   argIds:[elem_id,_]};
+
+clear(hash_id) matches  {event:'func_pre', targetId:hash_id, name:'clear'}; 
+    \end{lstlisting}
+
+  \end{block}
+  \alert{Remark:}
+  \begin{itemize}
+  \item with \lstinline{put} and \lstinline{clear} is not possible to monitor modification accurately
+  \item false positives are possible
+  \end{itemize}
+  \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]{Future work}
+  \begin{block}{Consider other object-oriented languages}
+  \begin{itemize}
+  \item Kotlin and Scala
+  \end{itemize}
+  \end{block}
+  \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}{Q\&A time}
 \vspace*{16ex}
   \begin{center}
