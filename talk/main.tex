@@ -205,6 +205,8 @@ assert sset.contains(s); // success
     \begin{itemize}
     \item verify that \lstinline{Collection} objects are not modified while in a hash table
     \item proposed solution: Runtime Verification (RV)
+    \item related work: study of \lstinline{equals} and \lstinline{hashCode} contract in Java collections
+       [NelsonPearceNoble@TOOLS2010]
     \end{itemize}   
   \end{block}
 
@@ -374,7 +376,7 @@ modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
 
 
 %% Main = not_new_hash*
-%%       {let hash_id;new_hash(hash_id)(SafeHashTable<hash_id>/\Main)}?;
+%%       {let hash_id;new_hash(hash_id)(SafeHashSet<hash_id>/\Main)}?;
 
 
 
