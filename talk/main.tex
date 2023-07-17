@@ -33,7 +33,26 @@
 \usepackage{doi}
 \usepackage[all]{xy}
 
-\lstset{language=Java,basicstyle=\ttfamily\footnotesize,commentstyle=\itshape,morekeywords={assert},keywordstyle=\ttfamily\bfseries}
+%% \lstset{language=Java,basicstyle=\ttfamily\footnotesize,commentstyle=\itshape,morekeywords={assert},keywordstyle=\ttfamily\bfseries}
+
+\lstset{
+	morekeywords={not,false,true,none,any,empty,matches,all,let,if,else,with,abs},
+	keywordstyle=\color{blue}\bfseries,
+	morestring=[b]',
+	stringstyle=\color{violet},
+	morecomment=[l]{//},
+	commentstyle=\color{cyan},
+	mathescape=true,
+	basicstyle=\ttfamily,
+	captionpos=b,
+	tabsize=4,
+	breaklines,
+	breakatwhitespace,
+	showstringspaces=false,
+	keepspaces
+}
+
+\lstset{literate={\\/}{$\orop$}2 {/\\}{$\andop$}2 {|}{$\shuffleop$}1 {!}{$\closop$}1 {>>}{$\filterop$}2 {:}{$:$}1}
 
 %\usetheme[secfooter]{PaloAlto}
 %\usetheme[secfooter]{Hannover}
@@ -72,24 +91,24 @@
 \begin{frame}{Contract for equality and hash code}
   \begin{block}{Features of most object-oriented languages}
     \begin{itemize}
-    \item two different notions of equality
+    \item two different notions of \hl{equality}
       \begin{itemize}
       \item by reference, predefined (\lstinline{==})
       \item weaker equality, user-defined (\lstinline{equals})
       \end{itemize}
-      \item hash code associated with an object
+      \item \hl{hash code} associated with an object
     \end{itemize}
   \end{block}
 
   \begin{block}{General contract in \lstinline[basicstyle=\ttfamily\large]{java.lang.Object}}
-    \emph{If two objects are equal, then the same hash code must be computed for them}
+    \emph{If two objects are equal, then the \hl{same hash code} must be computed for them}
   \end{block}
 
     \begin{block}{Reason}
-      Classes as \lstinline{HashSet} or \lstinline{HashMap} rely on \lstinline{equals} and \lstinline{hashCode}:
+      Classes as \lstinline[basicstyle=\ttfamily\normalsize]{HashSet} or \lstinline[basicstyle=\ttfamily\normalsize]{HashMap} rely on \lstinline[basicstyle=\ttfamily\normalsize]{equals} and \lstinline[basicstyle=\ttfamily\normalsize]{hashCode}:
       \begin{itemize}
-      \item \lstinline{hashCode} is used to retrieve a specific bucket
-      \item \lstinline{equals} is used to find an element in such a specific bucket        
+      \item \lstinline[basicstyle=\ttfamily\normalsize]{hashCode} is used to \hl{identify} a \hl{bucket}
+      \item \lstinline[basicstyle=\ttfamily\normalsize]{equals} is used to \hl{find} an element in a \hl{bucket} identified by \lstinline[basicstyle=\ttfamily\normalsize]{hashCode}        
         \end{itemize}
   \end{block}
 
@@ -98,18 +117,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Contract for equality and hash code}
-  \begin{block}{A stricter contract in \lstinline{java.util.Set}}
+  \begin{block}{A stricter contract in \lstinline[basicstyle=\ttfamily\large]{java.util.Set}}
     \emph{Great care must be exercised if mutable objects are used as set elements.}\\[1ex]
     \emph{The behavior of a set is not specified if the value of an object is changed in a way that affects equals comparisons while the object is an element in the set.} \\[1ex]
     \emph{A special case of this prohibition is that it is not permissible for a set to contain itself as an element.} 
   \end{block}
+
+  \begin{block}{Comments}
+    \begin{itemize}
+    \item rather imprecise specification
+      \begin{itemize}
+      \item affected only sets and maps implemented with \hl{hash tables}
+      \item no problem if \lstinline[basicstyle=\ttfamily\normalsize]{hashCode} is \hl{not redefined}
+      \item mutable objects  \al{must not be modified} while in a hash table
+      \end{itemize}
+\end{itemize}
+  \end{block}
+  
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[fragile]{Contract for equality and hash code}
   \begin{block}{A simple example}
-    \begin{lstlisting}[language=Java]
+    \begin{lstlisting}[language=Java,basicstyle=\ttfamily\scriptsize]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(1)); // s is {1}
 sset.add(s); // sset is {{1}}
@@ -126,7 +157,7 @@ assert sset.contains(s);
 
 \begin{frame}[fragile]{Contract for equality and hash code}
   \begin{block}{A simple example}
-    \begin{lstlisting}[language=Java]
+    \begin{lstlisting}[language=Java,basicstyle=\ttfamily\scriptsize]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(1)); // s is {1}
 sset.add(s); // sset is {{1}}
@@ -143,7 +174,7 @@ assert sset.contains(s); // success
 
 \begin{frame}[fragile]{Contract for equality and hash code}
   \begin{block}{Another example}
-    \begin{lstlisting}[language=Java]
+    \begin{lstlisting}[language=Java,basicstyle=\ttfamily\scriptsize]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(0)); // s is {0}
 sset.add(s); // sset is {{0}}
@@ -160,7 +191,7 @@ assert sset.contains(s);
 
 \begin{frame}[fragile]{Contract for equality and hash code}
   \begin{block}{Another example}
-    \begin{lstlisting}[language=Java]
+    \begin{lstlisting}[language=Java,basicstyle=\ttfamily\scriptsize]
 var sset = new HashSet<Set<Integer>>();
 var s = new HashSet<>(asList(0)); // s is {0}
 sset.add(s); // sset is {{0}}
@@ -174,11 +205,11 @@ assert sset.contains(s); // success
 
   \begin{block}{Issues}
     \begin{itemize}
-    \item almost unpredictable code behavior
-    \item non-deterministic behavior if \lstinline{hashCode} depends on object references
+    \item almost \al{unpredictable} code behavior
+    \item \al{non-deterministic} behavior if \lstinline[basicstyle=\ttfamily\normalsize]{hashCode} depends on object references
       \begin{itemize}
-      \item object references may change from one execution to another 
-      \item hash code needs not remain consistent from one execution to another 
+      \item object references \hl{may change} from one execution to another 
+      \item hash code \hl{needs not remain consistent} from one execution to another 
       \end{itemize}    
     \end{itemize}    
   \end{block}
@@ -189,24 +220,24 @@ assert sset.contains(s); // success
 \begin{frame}[fragile]{Theory versus practice}
   \begin{block}{Theory}
     \begin{itemize}
-    \item mutable classes should not redefine \lstinline{equals}
-    \item weaker contract: \lstinline{hashCode} should not depend on ``mutable'' fields
+    \item mutable classes \hl{should not redefine} \lstinline[basicstyle=\ttfamily\normalsize]{equals}
+    \item weaker contract: \lstinline[basicstyle=\ttfamily\normalsize]{hashCode} \hl{should not depend} on ``mutable'' fields
     \end{itemize}   
   \end{block}
 
   \begin{block}{Practice}
     \begin{itemize}
-    \item mutable classes of \lstinline{java.util.Collection} do not satisfy such a contract 
-    \item similar problems in Kotlin and Scala, but not in C\#
+    \item mutable classes of \lstinline[basicstyle=\ttfamily\normalsize]{Collection} \al{do not satisfy} such a contract 
+    \item \al{same problem} in Kotlin and Scala, but \al{not} in C\#
     \end{itemize}   
   \end{block}
 
 
     \begin{block}{Aims}
     \begin{itemize}
-    \item verify that \lstinline{Collection} objects are not modified while in a hash table
-    \item proposed solution: Runtime Verification (RV)
-    \item related work: study of \lstinline{equals} and \lstinline{hashCode} contract in Java collections
+    \item verify that \lstinline{Collection} objects are \al{not modified} while in a hash table
+    \item proposed solution: \hl{Runtime Verification (RV)}
+    \item related work: study of  \lstinline[basicstyle=\ttfamily\normalsize]{Collection} contracts in Java collections
        [NelsonPearceNoble@TOOLS2010]
     \end{itemize}   
   \end{block}
@@ -214,25 +245,6 @@ assert sset.contains(s); // success
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\lstset{
-	morekeywords={not,false,true,none,any,empty,matches,all,let,if,else,with,abs},
-	keywordstyle=\color{blue},
-	morestring=[b]',
-	stringstyle=\color{violet},
-	morecomment=[l]{//},
-	commentstyle=\color{cyan},
-	mathescape=true,
-	basicstyle=\ttfamily,
-	captionpos=b,
-	tabsize=4,
-	breaklines,
-	breakatwhitespace,
-	showstringspaces=false,
-	keepspaces
-}
-
-\lstset{literate={\\/}{$\orop$}2 {/\\}{$\andop$}2 {|}{$\shuffleop$}1 {!}{$\closop$}1 {>>}{$\filterop$}2 {:}{$:$}1}
 
 \section{Runtime Verification and \rml}
 
@@ -268,20 +280,20 @@ assert sset.contains(s); // success
 \begin{frame}{Why RV?}
   \begin{block}{RV bridges the gap between formal verification and testing}
     \begin{itemize}
-    \item as in formal verification
+    \item as in \hl{formal verification}
       \begin{itemize}
-      \item properties defined with a formalism
-      \item runs abstracted by event traces
+      \item properties defined with a \hl{formalism}
+      \item runs \hl{abstracted by event traces}
       \end{itemize}
-    \item as in testing
+    \item as in \hl{testing}
       \begin{itemize}
-      \item scalable solution although non exhaustive
+      \item \hl{scalable} solution although \al{non} \hl{exhaustive}
       \item exploitation of information available only at runtime
       \end{itemize}
     \item other features
       \begin{itemize}
-      \item error recovery, self-adaptation, cast-iron guarantees
-      \item runtime verification of control-oriented properties
+      \item \hl{error recovery}, \hl{self-adaptation}, \hl{cast-iron guarantees}
+      \item runtime verification of \hl{control-oriented properties}
       \end{itemize}
     \end{itemize}
   \end{block}
@@ -332,9 +344,9 @@ assert sset.contains(s); // success
     \begin{itemize}
     \item inspired by \hl{global session types}
     \item based on \hl{formal languages}: extension of deterministic CF grammars 
-    \item \hl{usability}: developers are familiar with regular expressions and grammars
-    \item \hl{expressive power}: more expressive than deterministic CF grammars
-    \item \hl{interoperability}: separation between specification and instrumentation
+    \item \hl{usability}: developers are \hl{familiar} with regular expressions and grammars
+    \item \hl{expressive power}: \hl{more expressive} than deterministic CF grammars
+    \item \hl{interoperability}: \hl{separation} between specification and instrumentation
     \end{itemize}
   \end{block}
 \end{frame}
@@ -403,10 +415,10 @@ modify(targ_id) matches add(targ_id,_) | remove(targ_id,_);
 \begin{frame}{\rml semantics}
   \begin{block}{In a nutshell}
     \begin{itemize}
-    \item based on the notion of Brzozowski derivative 
-    \item defined by a labeled transition systems with rewriting rules
-    \item labels are the monitored events
-    \item the initial state is the specification of the property
+    \item based on the notion of \hl{Brzozowski derivative} 
+    \item defined by a \hl{labeled transition systems} with rewriting rules
+    \item \hl{labels} are the \hl{events}
+    \item the \hl{initial state} is the \hl{specification} of the property
     \end{itemize}
   \end{block}
 \end{frame}
@@ -470,9 +482,9 @@ SafeHashElem<hash_id,elem_id> = not_modify_remove(hash_id,elem_id)* (remove(hash
 \begin{frame}[fragile]{Monitor at work}
   \begin{block}{Events}
     \begin{itemize}
-    \item  new hash set with id 5
-    \item  new hash set with id 9
-    \item insertion of set with id 9 into set with id 5  
+    \item  \hl{new} hash set with id 5
+    \item  \hl{new} hash set with id 9
+    \item \hl{insertion} of set with id 9 into set with id 5  
     \end{itemize}
   \end{block}
 
@@ -490,8 +502,8 @@ SafeHashElem<hash_id,elem_id> = not_modify_remove(hash_id,elem_id)* (remove(hash
 \begin{frame}[fragile]{Monitor at work}
   \begin{block}{Preliminary experiments}
     \begin{itemize}
-    \item  aim: validation of the specification 
-    \item  on event traces that simulate the  execution of simple Java programs
+    \item  aim: \hl{validation} of the specification 
+    \item  on event traces that \hl{simulate} the  execution of simple Java programs
     \end{itemize}
   \end{block}
 \end{frame}
@@ -500,7 +512,7 @@ SafeHashElem<hash_id,elem_id> = not_modify_remove(hash_id,elem_id)* (remove(hash
 
 \begin{frame}[fragile]{Monitor at work}
   \begin{block}{Preliminary experiments: example}
-    \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+    \begin{lstlisting}[basicstyle=\ttfamily\footnotesize,morekeywords={new}]
 var sset = new HashSet<Set<Integer>>();
 var s1 = new HashSet<Integer>();
 var s2 = new HashSet<Integer>();
@@ -539,11 +551,11 @@ clear(hash_id) matches  {event:'func_pre', targetId:hash_id, name:'clear'};
     \end{lstlisting}
 
   \end{block}
-  \alert{Remark:}
+  \al{Remark:}
   \begin{itemize}
-  \item with \lstinline{put} and \lstinline{clear} is not possible to monitor modification accurately
-  \item false positives are possible
-  \item the same specification can be used also for Kotlin and Scala
+  \item with \lstinline{put} and \lstinline{clear} is \al{not possible} to monitor modification accurately \\
+   \hl{false positives} are possible 
+  \item the same specification can be \hl{reused} for Kotlin and Scala
   \end{itemize}
   \end{frame}
 
@@ -552,8 +564,8 @@ clear(hash_id) matches  {event:'func_pre', targetId:hash_id, name:'clear'};
 \begin{frame}[fragile]{Assessment of the approach}
   \begin{block}{Experiments with real Java applications}
     \begin{itemize}
-    \item scalability
-    \item ability to detect bugs
+    \item \hl{scalability}
+    \item \hl{effective} bug detection
     \end{itemize}
   \end{block}
   \end{frame}
@@ -563,7 +575,7 @@ clear(hash_id) matches  {event:'func_pre', targetId:hash_id, name:'clear'};
 \begin{frame}{Q\&A time}
 \vspace*{16ex}
   \begin{center}
-  \LARGE Thank you!
+  \LARGE \hl{Thank you!}
 \end{center}
 \end{frame}
 
