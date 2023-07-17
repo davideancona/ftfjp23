@@ -77,10 +77,11 @@
       \item by reference, predefined (\lstinline{==})
       \item weaker equality, user-defined (\lstinline{equals})
       \end{itemize}
+      \item hash code associated with an object
     \end{itemize}
   \end{block}
 
-  \begin{block}{General contract in \lstinline{java.lang.Object}}
+  \begin{block}{General contract in \lstinline[basicstyle=\ttfamily\large]{java.lang.Object}}
     \emph{If two objects are equal, then the same hash code must be computed for them}
   \end{block}
 
@@ -267,11 +268,21 @@ assert sset.contains(s); // success
 \begin{frame}{Why RV?}
   \begin{block}{RV bridges the gap between formal verification and testing}
     \begin{itemize}
-    \item the notion of event trace abstracts over system runs
-    \item RV offers error recovery, self-adaptation, and issues that go beyond software reliability
-    \item some information available only at runtime
-    \item the behavior of an application may depend heavily on the environment of the target system
-    \item if security is an issue, RV provides cast-iron guarantees for properties that have been statically proved or tested
+    \item as in formal verification
+      \begin{itemize}
+      \item properties defined with a formalism
+      \item runs abstracted by event traces
+      \end{itemize}
+    \item as in testing
+      \begin{itemize}
+      \item scalable solution although non exhaustive
+      \item exploitation of information available only at runtime
+      \end{itemize}
+    \item other features
+      \begin{itemize}
+      \item error recovery, self-adaptation, cast-iron guarantees
+      \item runtime verification of control-oriented properties
+      \end{itemize}
     \end{itemize}
   \end{block}
 \end{frame}
@@ -323,7 +334,7 @@ assert sset.contains(s); // success
     \item based on \hl{formal languages}: extension of deterministic CF grammars 
     \item \hl{usability}: developers are familiar with regular expressions and grammars
     \item \hl{expressive power}: more expressive than deterministic CF grammars
-    \item \hl{interoperability}: clear separation between specification and instrumentation
+    \item \hl{interoperability}: separation between specification and instrumentation
     \end{itemize}
   \end{block}
 \end{frame}
@@ -334,9 +345,9 @@ assert sset.contains(s); // success
   \begin{block}{Four layers}
     \begin{itemize}
     \item \hl{event types}: relevant events 
-    \item \hl{trace expressions}: primitive and derived operators for defining sets of event traces
+    \item \hl{trace expressions}: primitive and derived operators on sets of traces
     \item \hl{parametricity}: existential quantification w.r.t. data carried by events
-    \item \hl{genericity}: specification with parameters to enhance modularity, reuse and expressive power
+    \item \hl{genericity}:  enhanced modularity, reuse and expressive power
     \end{itemize}
   \end{block}
 \end{frame}
